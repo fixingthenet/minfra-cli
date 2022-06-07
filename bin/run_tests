@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+require 'erb'
+require 'json'
+require 'pathname'
+
+root=Pathname.new(File.expand_path('..', __dir__))
+project_info=JSON.parse(File.read(root.join('project.json')))
+
+def pull_base_image
+  dockerfile = File.read(File.expand_path('../Dockerfile', __dir__))
+  base_image = dockerfile.match(/^FROM .+$/).to_s.gsub(/^FROM /, '')
+  run("docker pull #{base_image}")
+end
+
+def run(command, exit_on_error=true)
+  puts "running: #{command}"
+  system(command, out: $stdout, err: :out)
+  exit_status=$?.exitstatus
+  if exit_status.nonzero? && exit_on_error
+    exit(exit_status)
+  end
+  exit_status
+end
+
+if ENV["INSIDE_CONTAINER"] == "true" then
+  puts 'setting up test and running rspec'
+  run("bundle exec rspec --colour --tty #{ARGV.join(' ')}")
+  exit(0)
+end
+
+def pull_base_image
+  dockerfile = File.read(File.expand_path('../Dockerfile', __dir__))
+  base_image = dockerfile.match(/^FROM .+$/).to_s.gsub(/^FROM /, '')
+  run("docker pull #{base_image}")
+end
+
+# We always pull the latest base image, to ensure that we don't build with
+# an old base image that is already present on the Jenkins worker.
+pull_base_image
+
+@project_name  = project_info["docker"]["name"] # used in docker-compose.yml
+
+build_tag= ENV["BUILD_NUMBER"] || Time.now.strftime("%Y%m%d%H%M")
+
+cache_tag_code = "git describe --abbrev=0 --tags `git rev-list HEAD --skip=1 --max-count=1 2>/dev/null` 2>/dev/null"
+cache_tag = `#{cache_tag_code}`
+
+unless $?.exitstatus == 0
+  puts ("getting cache tag failed, fallback to 'latest'")
+  cache_tag = "latest"
+end
+cache_tag = false unless ENV["BUILD_ID"]
+
+volumes = []
+
+volumes << "..:/code" unless ENV["BUILD_ID"]
+
+@tag = build_tag
+@cache_tag = nil #cache_tag
+@volumes = volumes
+
+# Run docker pull on cache
+if @cache_tag
+  run("docker pull TBD/#{@project_name}:#{@cache_tag}")
+end
+
+erb = ERB.new(File.open("#{__dir__}/../spec/docker-compose.yml").read, 0, '>')
+File.write("#{__dir__}/../spec/docker-compose.run.yml", erb.result)
+
+run("sudo docker-compose -f #{__dir__}/../spec/docker-compose.run.yml build")
+envs=["-e 'INSIDE_CONTAINER=true'"]
+exit_status=run("sudo docker-compose -f #{__dir__}/../spec/docker-compose.run.yml run --rm #{envs.join(' ')} tester bin/run_tests #{ARGV.join(' ')}", false)
+run("sudo docker-compose -f #{__dir__}/../spec/docker-compose.run.yml down --remove-orphans") unless ENV["KEEP_SPEC_CONTAINERS"]
+exit(exit_status)

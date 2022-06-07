@@ -1,0 +1,12 @@
+tmp/*
+log/*
+deploy/*
+.codeqa/*
+.dockerignore
+.git/*
+.gitignore
+.idea/*
+.rubocop.yml
+public/javascripts/*
+*~
+vendor

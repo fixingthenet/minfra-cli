@@ -1,0 +1,9 @@
+version: "3.2"
+services:
+  tester:
+    image: TBD!/<%= @project_name %>:<%= @tag %>
+    
+    build:
+      context: ..
+    command:
+      "bin/run_tests"

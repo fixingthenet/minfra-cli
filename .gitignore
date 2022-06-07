@@ -1,0 +1,16 @@
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/spec/examples.txt
+/spec/reports/
+/tmp/
+vendor
+
+*~
+.byebug_history
+spec/docker-compose.run.yml
+
+minfra-cli-*.gem

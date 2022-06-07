@@ -1,0 +1,7 @@
+{
+  "project": "minfra-cli",
+  "docker": {
+    "repo": "fxnet",
+    "name": "minfra-cli"
+  }
+}

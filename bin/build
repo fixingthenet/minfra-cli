@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+
+app_dir=`pwd`
+prj_file="$app_dir/project.json"
+
+repo=`jq -r ".docker.repo" "$prj_file"`
+project=`jq -r ".docker.name" "$prj_file"`
+path=`jq -r ".path" "$prj_file"`
+
+ACTION=${1:-local}
+
+case "$ACTION" in
+  "local" )
+    docker build -t $repo/$project:latest $app_dir
+    ;;
+  * )
+    echo "unknown action: '$ACTION'"
+  ;;
+esac

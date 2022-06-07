@@ -1,0 +1,33 @@
+# this config file contains all config fields with comments
+# the ports we expose have to be in a certain range: 30000-32767
+# see https://kubernetes.io/docs/concepts/services-networking/service/#nodeport
+# and we expose them on port from 30000 to be easily rememberable
+kind: Cluster
+apiVersion: kind.sigs.k8s.io/v1alpha3
+nodes:
+# the control plane node config
+- role: control-plane
+  extraMounts: 
+    - containerPath: "/host"
+      hostPath: "<%= host_path %>"
+  extraArgs: 
+    - "--network"
+    - "<%= name %>"
+    - "--ip"
+    - "<%= ip %>"
+    - "-p"
+    - "80:80"
+    - "-p"
+    - "443:443"
+    - "-p"
+    - "30379:30379"
+    - "-p"
+    - "30432:30432"
+    - "-p"
+    - "30025:30025"
+    - "-p"
+    - "30017:30017"
+    - "-p"
+    - "6443:6443"
+    - "-v"
+    - "/tmp/hostpath_pv"
