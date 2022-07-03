@@ -19,7 +19,7 @@ require_relative 'cli/plugins'
 require 'active_support'
 require 'active_support/core_ext'
 
-require "ENV['MINFRA_PATH']/config/preload.rb" if File.exist?("ENV['MINFRA_PATH']/config/preload.rb")
+require "#{ENV['MINFRA_PATH']}/config/preload.rb" if File.exist?("#{ENV['MINFRA_PATH']}/config/preload.rb")
 
 module Minfra
   module Cli
