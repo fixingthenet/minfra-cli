@@ -32,6 +32,7 @@ module Orchparty
         if(file_path.end_with?(".erb"))
           helm.application = OpenStruct.new(cluster_name: cluster_name, namespace: namespace)
           template = Erubis::Eruby.new(File.read(file_path))
+          template.filename = file_path
           yaml = template.result(helm.get_binding)
           file = Tempfile.new("kube-deploy.yaml")
           file.write(yaml)
@@ -209,6 +210,7 @@ module Orchparty
           output_path = File.join(output_chart_path, 'templates', "#{app_name}-#{template_name}")
 
           template = Erubis::Eruby.new(File.read(template_path))
+          template.filename = template_path
           params.app_name = app_name
           params.templates_path = templates_path
           begin
@@ -226,6 +228,7 @@ module Orchparty
         output_path = File.join(output_chart_path, 'Chart.yaml')
 
         template = Erubis::Eruby.new(File.read(template_path))
+        template.filename = template_path
         params = Hashie::Mash.new(chart_name: chart_name)
         document = template.result(CleanBinding.new.get_binding(params))
         File.write(output_path, document)
