@@ -1,59 +1,85 @@
-require "deep_merge"
-require "orchparty/version"
-require "orchparty/ast"
-require "orchparty/context"
-require "orchparty/transformations"
-require "orchparty/dsl_parser"
-require "orchparty/dsl_parser_kubernetes"
-require "orchparty/plugin"
-require "orchparty/kubernetes_application"
-require "hash"
+# frozen_string_literal: true
+
+require 'deep_merge'
+require 'orchparty/version'
+require 'orchparty/ast'
+require 'orchparty/context'
+require 'orchparty/transformations'
+require 'orchparty/dsl_parser'
+require 'orchparty/dsl_parser_kubernetes'
+require 'orchparty/plugin'
+require 'orchparty/kubernetes_application'
+require 'hash'
 
 module Orchparty
 
-  def self.load_all_available_plugins
-    Gem::Specification.map {|f| f.matches_for_glob("orchparty/plugins/*.rb") }.flatten.map{|file_name| File.basename(file_name, ".*").to_sym }.each do |plugin_name|
-      plugin(plugin_name)
-    end
-  end
-
   def self.options
-    @@options || {}
+    @@options
   end
-  def self.plugins
-    Orchparty::Plugin.plugins
+  def self.options=(opt)
+     @@options=opt
   end
+  
+  class App
+    attr_reader :options
 
-  def self.plugin(name)
-    Orchparty::Plugin.load_plugin(name)
-  end
+    def initialize(cluster_name:, application_name:, force_variable_definition:, file_name:, options: {})
+      @cluster_name = cluster_name
+      @application_name = application_name
+      @force_variable_definiton = force_variable_definition
+      @file_name = file_name
+      @options = options
+      Orchparty.options=options
+      
+      load_plugins
+    end
 
-  def self.ast(filename: , application:, force_variable_definition: nil )
-    Transformations.transform(Orchparty::DSLParser.new(filename).parse, force_variable_definition: force_variable_definition).applications[application]
-  end
+    def plugins
+      Orchparty::Plugin.plugins
+    end
 
-  def self.generate(plugin_name, options, plugin_options)
-    plugins[plugin_name].generate(ast(options), plugin_options)
-  end
+    def print(method:, out_io:)
+      app(out_io: out_io).print(method)
+    end
 
-  def self.install(cluster_name: , application_name: , force_variable_definition:,  file_name:, options:  )
-    @@options= options
-    app_config = Transformations.transform_kubernetes(Orchparty::Kubernetes::DSLParser.new(file_name).parse, force_variable_definition: force_variable_definition).applications[application_name]
-    app = KubernetesApplication.new(app_config: app_config, namespace: application_name, cluster_name: cluster_name, file_name: file_name)
-    app.install
-  end
+    def install
+      app.install
+    end
 
-  def self.upgrade(cluster_name: , application_name: , force_variable_definition:,  file_name:, options: )
-    @@options = options
-    app_config = Transformations.transform_kubernetes(Orchparty::Kubernetes::DSLParser.new(file_name).parse, force_variable_definition: force_variable_definition).applications[application_name]
-    app = KubernetesApplication.new(app_config: app_config, namespace: application_name, cluster_name: cluster_name, file_name: file_name)
-    app.upgrade
-  end
+    def upgrade
+      app.upgrade
+    end
 
-  def self.print(cluster_name: , application_name: , force_variable_definition:,  file_name:, method:, options:, out_io: )
-    @@options= options
-    app_config = Transformations.transform_kubernetes(Orchparty::Kubernetes::DSLParser.new(file_name).parse, force_variable_definition: force_variable_definition).applications[application_name]
-    app = KubernetesApplication.new(app_config: app_config, namespace: application_name, cluster_name: cluster_name, file_name: file_name, out_io: out_io)
-    app.print(method)
+    private
+
+    def app(out_io: nil)
+      parsed = Orchparty::Kubernetes::DSLParser.new(@file_name).parse
+      app_config = Transformations.transform_kubernetes(parsed, force_variable_definition: @force_variable_definition).applications[@application_name]
+      KubernetesApplication.new(app_config: app_config, namespace: @application_name, cluster_name: @cluster_name, file_name: @file_name, out_io: out_io)
+    end
+    
+    def generate(plugin_name, options, plugin_options)
+      plugins[plugin_name].generate(ast(options), plugin_options)
+    end
+
+    def ast(filename:, application:, force_variable_definition: nil)
+      Transformations.transform(Orchparty::DSLParser.new(filename).parse,
+                                force_variable_definition: force_variable_definition).applications[application]
+    end
+
+    def load_plugins
+      Gem::Specification.map do |f|
+        f.matches_for_glob('orchparty/plugins/*.rb')
+      end.flatten.map do |file_name|
+        File.basename(file_name,
+                      '.*').to_sym
+      end.each do |plugin_name|
+        plugin(plugin_name)
+      end
+    end
+
+    def plugin(name)
+      Orchparty::Plugin.load_plugin(name)
+    end
   end
 end
