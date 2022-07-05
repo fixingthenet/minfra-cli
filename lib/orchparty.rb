@@ -52,7 +52,7 @@ module Orchparty
 
     private
 
-    def app(out_io: nil)
+    def app(out_io: STDOUT)
       parsed = Orchparty::Kubernetes::DSLParser.new(@file_name).parse
       app_config = Transformations.transform_kubernetes(parsed, force_variable_definition: @force_variable_definition).applications[@application_name]
       KubernetesApplication.new(app_config: app_config, namespace: @application_name, cluster_name: @cluster_name, file_name: @file_name, out_io: out_io)

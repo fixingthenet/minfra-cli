@@ -188,6 +188,7 @@ module Orchparty
         self
       end
 
+
       def wait(&block)
         name = SecureRandom.hex
         result = ServiceBuilder.build(name, "wait", block)
@@ -214,7 +215,6 @@ module Orchparty
       end
 
       def service(name, &block)
-
         chart_name = @application.name
         unless @application.services[chart_name]
           @application.services[chart_name] = AST.chart(name: chart_name, _type: "chart" )
@@ -332,6 +332,14 @@ module Orchparty
       def initialize(name, type)
         super AST.service(name: name, _type: type)
       end
+
+      # 1. rememebring the secrets in environment_secrets (so these environments can be created differentyly
+      # 2. create Secret sections
+      def environment_secrets(&block)
+        result = HashBuilder.build(block)
+        @node.environment_secrets = result
+        self
+      end
     end
 
     class ServiceMixinBuilder < CommonBuilder
@@ -356,6 +364,15 @@ module Orchparty
         @node._services << name
         self
       end
+
+      def secrets(name, &block)
+        result =  ServiceBuilder.build(name, "chart-secret", block)
+        @application.services[name] = result
+        @application._service_order << name
+        @node._services << name
+        self
+      end
+      
     end
   end
 end

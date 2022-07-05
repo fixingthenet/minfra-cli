@@ -118,14 +118,6 @@ module Orchparty
         @out_io.puts upgrade_cmd(label)
       end
 
-      def upgrade(label)
-        @out_io.puts system(upgrade_cmd(label))
-      end
-
-      def install(label)
-        @out_io.puts system(install_cmd(label))
-      end
-
       def upgrade_cmd(label)
         "kubectl --namespace #{namespace} --context #{cluster_name} label --overwrite #{label[:resource]} #{label[:name]} #{label["value"]}"
       end
@@ -185,7 +177,6 @@ module Orchparty
           output_chart_path: output_chart_path,
           chart_name: chart.name,
         )
-
         params.each do |app_name, subparams|
           subparams[:chart] = chart
           generate_documents_from_erbs(
@@ -204,8 +195,8 @@ module Orchparty
         end
 
         kind = params.fetch(:kind)
-
         Dir[File.join(templates_path, kind, '*.erb')].each do |template_path|
+          puts "Rendering Template: #{template_path}"
           template_name = File.basename(template_path, '.erb')
           output_path = File.join(output_chart_path, 'templates', "#{app_name}-#{template_name}")
 
@@ -218,7 +209,7 @@ module Orchparty
           rescue Exception
             puts "#{template_path} has a problem: #{$!.inspect}"
             raise
-          end  
+          end
           File.write(output_path, document)
         end
       end
@@ -252,6 +243,7 @@ module Orchparty
 
       def upgrade(chart)
         build_chart(chart) do |chart_path|
+          system("cp -a #{chart_path} /tmp/latest-chart")
           @out_io.puts system("helm upgrade --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}")
         end
       end
@@ -302,6 +294,7 @@ class KubernetesApplication
     services = combine_charts(app_config)
     services.each do |name|
       service = app_config[:services][name]
+      puts "Service: #{name} #{method}"
       "::Orchparty::Services::#{service._type.classify}".constantize.new(cluster_name: cluster_name, namespace: namespace, file_path: file_path, app_config: app_config, out_io: @out_io).send(method, service)
     end
   end
