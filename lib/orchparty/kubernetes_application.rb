@@ -158,7 +158,7 @@ module Orchparty
 
       def build_chart(chart)
         params = chart._services.map {|s| app_config.services[s.to_sym] }.map{|s| [s.name, s]}.to_h
-        Dir.mktmpdir do |dir|
+        Dir.mktmpdir("#{chart.name}-") do |dir|
           run(templates_path: File.expand_path(chart.template, self.dir_path), params: params, output_chart_path: dir, chart: chart)
           yield dir
         end
@@ -294,7 +294,7 @@ class KubernetesApplication
     services = combine_charts(app_config)
     services.each do |name|
       service = app_config[:services][name]
-      puts "Service: #{name} #{method}"
+      puts "Service: #{name}(#{service._type}) #{method}"
       "::Orchparty::Services::#{service._type.classify}".constantize.new(cluster_name: cluster_name, namespace: namespace, file_path: file_path, app_config: app_config, out_io: @out_io).send(method, service)
     end
   end

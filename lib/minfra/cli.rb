@@ -3,6 +3,7 @@ require 'open3'
 require 'json'
 require 'ostruct'
 require 'orchparty'
+require 'hiera'
 
 require_relative 'cli/logging'
 require_relative 'cli/config'
@@ -25,12 +26,75 @@ module Minfra
   module Cli
     extend Minfra::Cli::Logging
 
+
+    def self.init(argv)
+     @argv = argv
+     # we'll set the context very early!
+
+     if idx=@argv.index("-e")
+       @config = Config.load(@argv[idx+1])
+       @argv.delete_at(idx)
+       @argv.delete_at(idx)
+     else
+       @config = Config.load('dev')
+     end
+
+     hiera_init
+
+     Minfra::Cli::Plugins.load
+     Minfra::Cli.scan
+     require_relative 'cli/main_command'
+     Minfra::Cli.resolve
+
+     project_minfrarc_path = @config.base_path.join("config",'minfrarc.rb')
+     require project_minfrarc_path if project_minfrarc_path.exist?
+     me_minfrarc_path = @config.me_path.join('minfrarc.rb')
+     require @me_minfrarc_path if me_minfrarc_path.exist?
+     
+    end
+    
+    def self.run
+      Minfra::Cli::Main.start(@argv)
+    end
+
     def self.root_path
       Pathname.new(File.expand_path(File.join(__FILE__, '../../../')))
     end
 
+    def self.hiera_init
+      @hiera_root = Pathname.new("#{ENV["MINFRA_PATH"]}/hiera")
+      hiera = Hiera.new(:config => @hiera_root.join('hiera.yaml').to_s)
+      Hiera.logger=:noop
+      env= @config.orch_env
+      raise("unknown environment #{env}, I expact a file at hiera/hieradata/environments/#{env}.eyaml") unless @hiera_root.join("hieradata/environments/#{env}.eyaml").exist? 
+
+             
+      scope={ "hieraroot" => @hiera_root.to_s, "env" => env}
+      special_lookups=hiera.lookup("lookup_options", {},  scope, nil, :priority)
+      
+      node_scope=hiera.lookup("env", {},  scope, nil, :deeper)
+      scope=scope.merge(node_scope)
+      cache={}
+
+      Kernel.define_method(:l) do |value,default=nil|
+       return cache[value] if cache.has_key?(value)
+
+       if special_lookups[value]
+         lookup_type={ merge_behavior: special_lookups[value]["merge"].to_sym }
+       else
+         lookup_type=:native #priority
+       end
+
+       result=hiera.lookup(value, default, scope, nil, lookup_type)
+       result=Hashie::Mash.new(result) if result.kind_of?(Hash)
+       cache[value] = result
+       result
+      end
+    end
+
+
     def self.config
-      @config ||= Config.new
+      @config
     end
     def self.scan
       root_path.join("lib/minfra/cli/commands").each_child do |command_path|
@@ -71,10 +135,3 @@ module Minfra
     end
   end
 end
-
-Minfra::Cli::Plugins.load
-Minfra::Cli.scan
-require_relative 'cli/main_command'
-Minfra::Cli.resolve
-
-

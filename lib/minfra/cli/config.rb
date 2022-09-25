@@ -44,10 +44,12 @@ module Minfra
         @kube_path=@me_path.join('kube')
         @kube_config_path=@kube_path.join('config')
         @kind_config_path=@me_path.join("kind.yaml.erb")
-        @project_minfrarc_path = @base_path.join("config",'minfrarc.rb')
-        require @project_minfrarc_path if @project_minfrarc_path.exist?
-        @me_minfrarc_path = @me_path.join('minfrarc.rb')
-        require @me_minfrarc_path if @me_minfrarc_path.exist?
+
+#        @project_minfrarc_path = @base_path.join("config",'minfrarc.rb')
+#        require @project_minfrarc_path if @project_minfrarc_path.exist?
+#        @me_minfrarc_path = @me_path.join('minfrarc.rb')
+#        require @me_minfrarc_path if @me_minfrarc_path.exist?
+
         if config_path.exist?
           @config = Hashie::Mash.new(JSON.parse(Minfra::Cli::Templater.render(File.read(config_path),{}))) 
         else
@@ -61,11 +63,7 @@ module Minfra
         debug( "loading config env: #{orch_env} #{@orch_env}" )
         return self if defined?(@orch_env)
         @orch_env = orch_env
-        @orch_env_config = @config.environments[@orch_env] || raise(EnvironmentNotFoundError.new("Configuration for orchestration environment '#{@orch_env}' not found. Available orechstration environments: #{@config.environments.keys.inspect}"))
-        @project= @project.
-                  deep_merge(@project.environments[@orch_env]).
-                  deep_merge(@config).
-                  deep_merge(@orch_env_config)
+        @orch_env_config=Hashie::Mash.new
         @orch_env_config['env']=@orch_env
         self
       end
