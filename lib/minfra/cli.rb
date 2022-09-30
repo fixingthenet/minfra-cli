@@ -90,6 +90,11 @@ module Minfra
        cache[value] = result
        result
       end
+      Kernel.define_method(:l!) do |value,default=nil|
+        v=l(value,default)
+        raise("Value not found! #{value}") if v.nil?
+        v
+      end  
     end
 
 

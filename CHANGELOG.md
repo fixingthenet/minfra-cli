@@ -1,3 +1,5 @@
+# 1.0.1
+ * adding l! method
 # 1.0.0
  * adding hiera as dependecy
  * removing self developped inheritance of data
