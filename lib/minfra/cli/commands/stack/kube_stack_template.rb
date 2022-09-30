@@ -13,19 +13,12 @@ module Minfra
         @config     = config
         @env        = config.orch_env
         @deployment = deployment.freeze
-        @cluster    = cluster.freeze
+        @cluster    = cluster.freeze || l!("cluster").id
         puts "Stack selection: #{@name}, #{@path}, #{@cluster}"
       end
 
       def cluster_name
-        return @cluster_name if defined?(@cluster_name)
-        @cluster_name = @cluster
-        @cluster_name ||= "kind-#{@config.name}" if @config.dev?
-        if cluster_path.exist? && (@cluster_name.nil? || @cluster_name.empty?)
-            @cluster_name = YAML.load(File.read(cluster_path))[env.to_s]
-        end
-        @cluster_name ||= env
-        @cluster_name
+        @cluster
       end
 
       def mixin_env
@@ -47,10 +40,6 @@ module Minfra
         release_path.join('stack.rb')
       end
 
-      def cluster_path
-        release_path.join("cluster.yaml")
-      end
-
       def compose_path(blank: false)
         if blank
           release_path.join("compose.yaml")
@@ -63,15 +52,6 @@ module Minfra
 
       def error_message
         @errors.join(";\n")
-      end
-
-      # we use a special file to flag the this stack is releasable to an environment
-      def releasable?
-        switch_path.exist?
-      end
-
-      def switch_path
-        release_path.join("#{@env}_#{rancher_stack_name}.sh")
       end
 
       def release_path
