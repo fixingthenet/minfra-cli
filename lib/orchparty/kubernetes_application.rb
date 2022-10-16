@@ -16,11 +16,12 @@ module Orchparty
       attr_accessor :app_config
       attr_accessor :options
 
-      def initialize(cluster_name: , namespace:, file_path: , app_config:, out_io: STDOUT)
+      def initialize(cluster_name: , namespace:, file_path: , app_config:, out_io: STDOUT, app: )
         self.cluster_name = cluster_name
         self.namespace = namespace
         self.dir_path = file_path
         self.app_config = app_config
+        @app = app
         @out_io = out_io
         self.options=options
       end
@@ -158,14 +159,13 @@ module Orchparty
 
       def build_chart(chart)
         params = chart._services.map {|s| app_config.services[s.to_sym] }.map{|s| [s.name, s]}.to_h
-        Dir.mktmpdir("#{chart.name}-") do |dir|
-          run(templates_path: File.expand_path(chart.template, self.dir_path), params: params, output_chart_path: dir, chart: chart)
-          yield dir
-        end
+        dir = @app.status_dir.join('helm')
+        dir.mkpath
+        run(templates_path: File.expand_path(chart.template, self.dir_path), params: params, output_chart_path: dir, chart: chart)
+        yield dir
       end
 
       def run(templates_path:, params:, output_chart_path:, chart: )
-        system("mkdir -p #{output_chart_path}")
         system("mkdir -p #{File.join(output_chart_path, 'templates')}")
 
         system("cp #{File.join(templates_path, 'values.yaml')} #{File.join(output_chart_path, 'values.yaml')}")
@@ -256,12 +256,14 @@ class KubernetesApplication
   attr_accessor :file_path
   attr_accessor :namespace
   attr_accessor :app_config
+  attr_reader :status_dir
 
-  def initialize(app_config: [], namespace:, cluster_name:, file_name:, out_io: STDOUT)
+  def initialize(app_config: [], namespace:, cluster_name:, file_name:, status_dir:, out_io: STDOUT)
     self.file_path = Pathname.new(file_name).parent.expand_path
     self.cluster_name = cluster_name
     self.namespace = namespace
     self.app_config = app_config
+    @status_dir = status_dir
     @out_io= out_io
   end
 
@@ -295,7 +297,7 @@ class KubernetesApplication
     services.each do |name|
       service = app_config[:services][name]
       puts "Service: #{name}(#{service._type}) #{method}"
-      "::Orchparty::Services::#{service._type.classify}".constantize.new(cluster_name: cluster_name, namespace: namespace, file_path: file_path, app_config: app_config, out_io: @out_io).send(method, service)
+      "::Orchparty::Services::#{service._type.classify}".constantize.new(cluster_name: cluster_name, namespace: namespace, file_path: file_path, app_config: app_config, out_io: @out_io, app: self).send(method, service)
     end
   end
 end

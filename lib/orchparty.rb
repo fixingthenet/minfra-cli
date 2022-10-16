@@ -23,12 +23,14 @@ module Orchparty
   class App
     attr_reader :options
 
-    def initialize(cluster_name:, application_name:, force_variable_definition:, file_name:, options: {})
+    def initialize(cluster_name:, application_name:, force_variable_definition:, file_name:, status_dir:, options: {})
       @cluster_name = cluster_name
       @application_name = application_name
       @force_variable_definiton = force_variable_definition
       @file_name = file_name
+      @status_dir = status_dir
       @options = options
+      
       Orchparty.options=options
       
       load_plugins
@@ -55,7 +57,14 @@ module Orchparty
     def app(out_io: STDOUT)
       parsed = Orchparty::Kubernetes::DSLParser.new(@file_name).parse
       app_config = Transformations.transform_kubernetes(parsed, force_variable_definition: @force_variable_definition).applications[@application_name]
-      KubernetesApplication.new(app_config: app_config, namespace: @application_name, cluster_name: @cluster_name, file_name: @file_name, out_io: out_io)
+      KubernetesApplication.new(
+        app_config: app_config, 
+        namespace: @application_name, 
+        cluster_name: @cluster_name, 
+        file_name: @file_name,
+        status_dir: @status_dir,
+        out_io: out_io
+      )
     end
     
     def generate(plugin_name, options, plugin_options)

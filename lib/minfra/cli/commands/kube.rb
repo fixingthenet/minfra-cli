@@ -86,18 +86,21 @@ module Minfra
         cluster = stack.cluster_name
 
         method = options["install"] ? "install" : "upgrade"
-        File.open(stack.compose_path(blank: true),"w") do |f|
+
+        stack.release_path.mkpath
+        
+        File.open(stack.compose_path,"w") do |f|
           Orchparty::App.new(cluster_name: cluster, 
                         application_name: stack.name, 
                         force_variable_definition: false, 
                         file_name: stack.stack_rb_path.to_s,
+                        status_dir: stack.release_path,
                         options: options
                         ).
                         print( method: method, out_io: f)
         end
         #run_cmd(generate_cmd, :bash)
         bash_cmd = ["cd #{stack.release_path}"]
-        bash_cmd << "cp #{stack.compose_path(blank: true)} #{stack.compose_path}"
         run_cmd(bash_cmd, :bash)
 
 
@@ -132,6 +135,7 @@ module Minfra
                         application_name: stack.name, 
                         force_variable_definition: false, 
                         file_name: stack.stack_rb_path.to_s,
+                        status_dir: stack.release_path,
                         options: options
                         )
           orch.send(method)
