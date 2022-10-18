@@ -1,3 +1,5 @@
+# 1.0.2
+ * looking up cluster name by hiera cluster.id
 # 1.0.1
  * adding l! method
 # 1.0.0

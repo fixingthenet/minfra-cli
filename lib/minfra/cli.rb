@@ -75,7 +75,6 @@ module Minfra
       node_scope=hiera.lookup("env", {},  scope, nil, :deeper)
       scope=scope.merge(node_scope)
       cache={}
-
       Kernel.define_method(:l) do |value,default=nil|
        return cache[value] if cache.has_key?(value)
 

@@ -5,27 +5,21 @@ module Minfra
       class KubeStackTemplate
       include ::Minfra::Cli::Logging
 
-      attr_reader :name, :env, :deployment
+      attr_reader :name, :env, :deployment, :config_path
       def initialize(name, config, deployment: '', cluster:)
         @name       = name
-        @path       = config.stacks_path.join(name)
+        @config_path = config.stacks_path.join(name)
         @errors     = []
         @config     = config
         @env        = config.orch_env
         @deployment = deployment.freeze
-        @cluster    = cluster.freeze
-        puts "Stack selection: #{@name}, #{@path}, #{@cluster}"
+        @cluster    = cluster.freeze || l!("cluster").id
+        @result_path = config.status_path.join('stacks', @cluster, name)
+        puts "Stack selection: #{@name}, #{@config_path}, #{@cluster}, #{@result_path}"
       end
 
       def cluster_name
-        return @cluster_name if defined?(@cluster_name)
-        @cluster_name = @cluster
-        @cluster_name ||= "kind-#{@config.name}" if @config.dev?
-        if cluster_path.exist? && (@cluster_name.nil? || @cluster_name.empty?)
-            @cluster_name = YAML.load(File.read(cluster_path))[env.to_s]
-        end
-        @cluster_name ||= env
-        @cluster_name
+        @cluster
       end
 
       def mixin_env
@@ -33,8 +27,8 @@ module Minfra
       end
 
       def valid?
-        unless @path.exist?
-          @errors << "stack path #{@path} doesn't exist"
+        unless @config_path.exist?
+          @errors << "stack path #{@config_path} doesn't exist"
         end
 
         unless stack_rb_path.exist?
@@ -44,11 +38,7 @@ module Minfra
       end
 
       def stack_rb_path
-        release_path.join('stack.rb')
-      end
-
-      def cluster_path
-        release_path.join("cluster.yaml")
+        config_path.join('stack.rb')
       end
 
       def compose_path(blank: false)
@@ -65,17 +55,8 @@ module Minfra
         @errors.join(";\n")
       end
 
-      # we use a special file to flag the this stack is releasable to an environment
-      def releasable?
-        switch_path.exist?
-      end
-
-      def switch_path
-        release_path.join("#{@env}_#{rancher_stack_name}.sh")
-      end
-
       def release_path
-        @path
+        @result_path
       end
 
 

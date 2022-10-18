@@ -16,6 +16,7 @@ module Minfra
       attr_reader :base_path
       attr_reader :config_path
       attr_reader :stacks_path
+      attr_reader :status_path
       attr_reader :me_path
       attr_reader :kube_path
       attr_reader :kube_config_path
@@ -41,6 +42,7 @@ module Minfra
         @project_config_path=@base_path.join("config","project.json")
         @config_path =  @me_path.join('config.json')
         @stacks_path = @base_path.join('stacks')
+        @status_path = @base_path.join('state')
         @kube_path=@me_path.join('kube')
         @kube_config_path=@kube_path.join('config')
         @kind_config_path=@me_path.join("kind.yaml.erb")
