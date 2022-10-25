@@ -5,16 +5,17 @@ module Minfra
       class KubeStackTemplate
       include ::Minfra::Cli::Logging
 
-      attr_reader :name, :env, :deployment
+      attr_reader :name, :env, :deployment, :config_path
       def initialize(name, config, deployment: '', cluster:)
         @name       = name
-        @path       = config.stacks_path.join(name)
+        @config_path = config.stacks_path.join(name)
         @errors     = []
         @config     = config
         @env        = config.orch_env
         @deployment = deployment.freeze
         @cluster    = cluster.freeze || l!("cluster").id
-        puts "Stack selection: #{@name}, #{@path}, #{@cluster}"
+        @result_path = config.status_path.join('stacks', @cluster, name)
+        puts "Stack selection: #{@name}, #{@config_path}, #{@cluster}, #{@result_path}"
       end
 
       def cluster_name
@@ -26,8 +27,8 @@ module Minfra
       end
 
       def valid?
-        unless @path.exist?
-          @errors << "stack path #{@path} doesn't exist"
+        unless @config_path.exist?
+          @errors << "stack path #{@config_path} doesn't exist"
         end
 
         unless stack_rb_path.exist?
@@ -37,7 +38,11 @@ module Minfra
       end
 
       def stack_rb_path
+<<<<<<< HEAD
         release_path.join('stack.rb')
+=======
+        config_path.join('stack.rb')
+>>>>>>> 105dc30122db54328cdf1707f5d3d10d4d8792c3
       end
 
       def compose_path(blank: false)
@@ -55,7 +60,7 @@ module Minfra
       end
 
       def release_path
-        @path
+        @result_path
       end
 
 

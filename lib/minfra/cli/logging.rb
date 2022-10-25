@@ -11,15 +11,15 @@ module Minfra
       end
 
       def info(str)
-        STDOUT.puts str
+        STDERR.puts str
       end
 
       def debug(str)
-        STDOUT.puts "Debug: #{str}"
+        STDERR.puts "Debug: #{str}"
       end
 
       def deprecated(comment)
-        puts "DEPRECATED: #{comment}"
+        STDERR.puts "DEPRECATED: #{comment}"
       end
     end
   end
