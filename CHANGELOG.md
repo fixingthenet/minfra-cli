@@ -1,5 +1,7 @@
-# 1.3.0
+# 1.2.0
  * no .tags any more
+# 1.1.0
+ 
 # 1.0.2
  * looking up cluster name by hiera cluster.id
 # 1.0.1
