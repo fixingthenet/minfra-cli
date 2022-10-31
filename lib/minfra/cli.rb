@@ -68,7 +68,6 @@ module Minfra
       env= @config.orch_env
       raise("unknown environment #{env}, I expact a file at hiera/hieradata/environments/#{env}.eyaml") unless @hiera_root.join("hieradata/environments/#{env}.eyaml").exist? 
 
-             
       scope={ "hieraroot" => @hiera_root.to_s, "env" => env}
       special_lookups=hiera.lookup("lookup_options", {},  scope, nil, :priority)
       
@@ -76,15 +75,23 @@ module Minfra
       scope=scope.merge(node_scope)
       cache={}
       Kernel.define_method(:l) do |value,default=nil|
+
        return cache[value] if cache.has_key?(value)
+
+       values=value.split(".")
+       value=values.shift
 
        if special_lookups[value]
          lookup_type={ merge_behavior: special_lookups[value]["merge"].to_sym }
        else
-         lookup_type=:native #priority
+         lookup_type=:deep
        end
 
        result=hiera.lookup(value, default, scope, nil, lookup_type)
+       unless values.empty?
+         result=result.dig(*values)
+       end
+
        result=Hashie::Mash.new(result) if result.kind_of?(Hash)
        cache[value] = result
        result

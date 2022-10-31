@@ -1,3 +1,9 @@
+# 1.3.0
+ * deep lookup value like "env.cluster.name"
+# 1.2.2
+ * fixing tagging
+# 1.2.1
+ * fixing merge
 # 1.2.0
  * no .tags any more
 # 1.1.0

@@ -38,11 +38,7 @@ module Minfra
       end
 
       def stack_rb_path
-<<<<<<< HEAD
-        release_path.join('stack.rb')
-=======
         config_path.join('stack.rb')
->>>>>>> 105dc30122db54328cdf1707f5d3d10d4d8792c3
       end
 
       def compose_path(blank: false)

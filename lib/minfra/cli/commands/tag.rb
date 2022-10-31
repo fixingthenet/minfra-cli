@@ -16,7 +16,7 @@ module Minfra
 
         info 'Creating tag.'
         debug "Using .tags folder..."
-        write_tag_folder_file(message)
+#        write_tag_folder_file(message)
         #run_cmd(cmd_add_tag_info("#{@tags_folder}/#{tag_name}"), :system)
         #run_cmd(cmd_create_tag_commit, :system)
         run_cmd(cmd_tag_commit(message), :system)
