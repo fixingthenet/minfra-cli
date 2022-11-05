@@ -1,6 +1,8 @@
 # 1.4.0
  * plugin managment
- * changed logging (added central logger)
+ * changed logging (added central logger, and configurable loglevel: MINFRA_LOGGING_LEVEL minfra.logging_level)
+ * hiera main path can be configured (minfra.hiera.env_path)
+ * fixed kube subcommand
 # 1.3.0
  * deep lookup value like "env.cluster.name"
 # 1.2.2

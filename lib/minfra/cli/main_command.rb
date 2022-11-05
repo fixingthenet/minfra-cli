@@ -3,12 +3,11 @@ module Minfra
     class Main < Command
 
       desc 'kube', 'kubectl wrapper and other features'
-      long_desc '
-      '
-      option :environment, required: false, aliases: ['-e']
       option :cluster
+      option :stack, required: true
       def kube(*args)
-          kube.kubectl_command(args)
+        kube = Kube.new(options, @minfra_config)
+        kube.kubectl_command(args)
       end
 
       # tbd: move this to project

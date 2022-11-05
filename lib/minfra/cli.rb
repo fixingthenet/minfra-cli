@@ -44,7 +44,7 @@ module Minfra
      end
 
      @logger=Logger.new(STDERR)
-     logger.level=@config.project.minfra.logging_level || 'warn'
+     logger.level=ENV["MINFRA_LOGGING_LEVEL"] || @config.project.minfra.logging_level || 'warn'
      @logger.debug("Minfra: loglevel: #{@logger.level}, env: #{@config.orch_env}")
      
      hiera_init
@@ -76,7 +76,8 @@ module Minfra
       hiera = Hiera.new(:config => @hiera_root.join('hiera.yaml').to_s)
       Hiera.logger=:noop
       env= @config.orch_env
-      raise("unknown environment #{env}, I expact a file at hiera/hieradata/environments/#{env}.eyaml") unless @hiera_root.join("hieradata/environments/#{env}.eyaml").exist? 
+      hiera_main_path=@hiera_root.join("hieradata/#{config.project.minfra.hiera.env_path}/#{env}.eyaml")
+      raise("unknown environment #{env}, I expact a file at #{hiera_main_path}") unless hiera_main_path.exist? 
 
       scope={ "hieraroot" => @hiera_root.to_s, "env" => env}
       special_lookups=hiera.lookup("lookup_options", {},  scope, nil, :priority)
