@@ -88,7 +88,7 @@ module Minfra
        end
 
        result=hiera.lookup(value, default, scope, nil, lookup_type)
-       unless values.empty?
+       if !values.empty? && result.kind_of?(Hash) # we return nil or the scalar value and only drill down on hashes
          result=result.dig(*values)
        end
 
