@@ -4,19 +4,25 @@ module Minfra
       class Plugin
         include Logging
         attr_reader :name, :version, :opts, :path
-        def initialize(name:, version:, opts:)
+        
+        
+        def initialize(name:, version:, opts:, disabled:)
           @name= name
           @version = version
           @opts = opts.merge(require: false)
+          @disabled= disabled
           if opts["path"]
             @path= Minfra::Cli.config.base_path.join(opts["path"])
           end  
         end
-
+        def disabled?
+          @disabled
+        end
+        
         #adds the plugin to the 
         def prepare
-          debug("plugin prepare: #{name}, #{version}")
-          
+          debug("plugin prepare: #{name}, #{version}, disabled: #{disabled?}")
+          return if disabled?
           if path
             begin
               lib_path=path.join('lib')
@@ -36,6 +42,7 @@ module Minfra
         end
         
         def setup
+          return if disabled?
           if path 
             minfra_path = Pathname.new(path).join("minfracs","init.rb")
             if minfra_path.exist?
@@ -49,14 +56,15 @@ module Minfra
             error("Gem based plugins not supported yet")
           end    
         end
+
         def install
+          return if disabled?
           if path
             system("cd #{path}; bundle install")
           else
             system("gem install #{name} --version #{version}")
           end
         end
-        
       end
       
       def initialize(plugins)
@@ -89,7 +97,7 @@ module Minfra
           next unless File.exist?(file)
           plugins=JSON.parse(File.read(file))
           plugins["plugins"].each do |spec|
-            found << Plugin.new(name: spec['name'], opts: spec['opts'] || {}, version: spec['version'])
+            found << Plugin.new(name: spec['name'], opts: spec['opts'] || {}, version: spec['version'], disabled: spec['disabled'])
           end
         end
         new(found)
