@@ -36,7 +36,6 @@ module Minfra
       end
       
       def init!(base_path_str=nil)
-        debug( "Config: initializing" )  
         @base_path = Pathname.new(base_path_str || ENV["MINFRA_PATH"]).expand_path
         @me_path = @base_path.join('me')
         @project_config_path=@base_path.join("config","project.json")
@@ -62,7 +61,6 @@ module Minfra
       end
 
       def load(orch_env)
-        debug( "loading config env: #{orch_env} #{@orch_env}" )
         return self if defined?(@orch_env)
         @orch_env = orch_env
         @orch_env_config=Hashie::Mash.new

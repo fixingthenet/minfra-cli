@@ -24,9 +24,13 @@ require "#{ENV['MINFRA_PATH']}/config/preload.rb" if File.exist?("#{ENV['MINFRA_
 
 module Minfra
   module Cli
+
     extend Minfra::Cli::Logging
 
-
+    def self.logger
+      @logger
+    end
+    
     def self.init(argv)
      @argv = argv
      # we'll set the context very early!
@@ -39,9 +43,15 @@ module Minfra
        @config = Config.load('dev')
      end
 
+     @logger=Logger.new(STDERR)
+     logger.level=@config.project.minfra.logging_level || 'warn'
+     @logger.debug("Minfra: loglevel: #{@logger.level}, env: #{@config.orch_env}")
+     
      hiera_init
 
-     Minfra::Cli::Plugins.load
+     @plugins = Minfra::Cli::Plugins.load
+     @plugins.prepare
+     
      Minfra::Cli.scan
      require_relative 'cli/main_command'
      Minfra::Cli.resolve
@@ -107,17 +117,17 @@ module Minfra
     def self.config
       @config
     end
+    
     def self.scan
+      #loading built in commands
       root_path.join("lib/minfra/cli/commands").each_child do |command_path|
         require command_path if command_path.to_s.match(/\.rb$/) && !command_path.to_s.match(/\#/)
       end
-      # this is like railties but their called minfracs
-      $LOAD_PATH.each do |path|
-        minfra_path = Pathname.new(path).join("..","minfracs","init.rb")
-        if minfra_path.exist?
-          require minfra_path # this should register the command
-        end
-      end
+      @plugins.setup
+    end
+    
+    def self.plugins
+      @plugins
     end
 
     def self.register(subcommand,info,command)

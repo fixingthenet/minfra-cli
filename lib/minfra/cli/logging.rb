@@ -2,7 +2,7 @@ module Minfra
   module Cli
     module Logging
       def error(str)
-        STDERR.puts "Error: #{str}"
+        logger.error str
       end
 
       def exit_error(str)
@@ -11,15 +11,23 @@ module Minfra
       end
 
       def info(str)
-        STDERR.puts str
+        logger.info str
+      end
+
+      def warn(str)
+        logger.warn str
       end
 
       def debug(str)
-        STDERR.puts "Debug: #{str}"
+        logger.debug str
       end
 
       def deprecated(comment)
-        STDERR.puts "DEPRECATED: #{comment}"
+        logger.warn "DEPRECATED: #{comment}"
+      end
+      private
+      def logger
+        Minfra::Cli.logger
       end
     end
   end

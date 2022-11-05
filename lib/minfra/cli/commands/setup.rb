@@ -5,7 +5,7 @@ module Minfra
       include Logging
       include Hook
 
-      desc "setup", "creates a default config file on the host"
+      desc "dev", "creates a default config file on the host"
       def dev
         setup_config
       end

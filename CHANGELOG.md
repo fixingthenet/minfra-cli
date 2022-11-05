@@ -1,3 +1,6 @@
+# 1.4.0
+ * plugin managment
+ * changed logging (added central logger)
 # 1.3.0
  * deep lookup value like "env.cluster.name"
 # 1.2.2
