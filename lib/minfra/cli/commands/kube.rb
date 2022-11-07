@@ -183,7 +183,7 @@ module Minfra
 
         subcommand = args.shift
 
-        if ['exec', 'logs'].include?(subcommand)
+        if ['exec', 'logs','port-forward'].include?(subcommand)
           resource = nil
           implicit_resource = 'pod'
         else
@@ -196,8 +196,8 @@ module Minfra
                      options[:cluster])
 
         cluster = stack.cluster_name
-
-        if [resource, implicit_resource].include?('pod') && ['delete', 'describe', 'exec', 'logs'].include?(subcommand)
+        byebug
+        if [resource, implicit_resource].include?('pod') && ['delete', 'describe', 'exec', 'logs', 'port-forward'].include?(subcommand)
           cmd_get_pods = "kubectl --kubeconfig #{kube_config_path} --context #{cluster} --namespace #{options[:stack]} get pod -o jsonpath='{range .items[*]}{.metadata.name}{\"\\n\"}'"
 
           pods_list = run_cmd(cmd_get_pods).split("\n")

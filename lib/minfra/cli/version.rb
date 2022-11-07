@@ -1,5 +1,5 @@
 module Minfra
   module Cli
-    VERSION = '1.4.0'.freeze
+    VERSION = '1.4.1'.freeze
   end
 end

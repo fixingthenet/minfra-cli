@@ -1,3 +1,5 @@
+# 1.4.1
+ * kube command supports port-foward and finds the first fuzzy podname 
 # 1.4.0
  * plugin managment
  * changed logging (added central logger, and configurable loglevel: MINFRA_LOGGING_LEVEL minfra.logging_level)
