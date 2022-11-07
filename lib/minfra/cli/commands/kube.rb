@@ -196,7 +196,6 @@ module Minfra
                      options[:cluster])
 
         cluster = stack.cluster_name
-        byebug
         if [resource, implicit_resource].include?('pod') && ['delete', 'describe', 'exec', 'logs', 'port-forward'].include?(subcommand)
           cmd_get_pods = "kubectl --kubeconfig #{kube_config_path} --context #{cluster} --namespace #{options[:stack]} get pod -o jsonpath='{range .items[*]}{.metadata.name}{\"\\n\"}'"
 

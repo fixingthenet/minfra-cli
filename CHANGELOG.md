@@ -1,3 +1,5 @@
+# 1.4.2
+ * removing byebug
 # 1.4.1
  * kube command supports port-foward and finds the first fuzzy podname 
 # 1.4.0
