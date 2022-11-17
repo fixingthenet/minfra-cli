@@ -1,3 +1,6 @@
+# 1.4.3
+ * fixing exec for kubectl wrapper
+ * more logger usage less puts
 # 1.4.2
  * removing byebug
 # 1.4.1
