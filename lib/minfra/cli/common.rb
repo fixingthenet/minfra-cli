@@ -10,7 +10,7 @@ module Minfra
       end
 
       def run_cmd(cmd, type = :non_system, silence: false)
-        puts cmd unless silence
+        debug(cmd)
         case type
         when :exec
           Kernel.exec(cmd)

@@ -226,7 +226,8 @@ module Minfra
 
         if subcommand == 'exec'
           subcommand = 'exec -ti'
-          extra_args << '--' << 'bash'
+          extra_args.unshift('--')
+          extra_args << 'bash' if args.empty?
         end
 
         extra_args = extra_args.join(' ')

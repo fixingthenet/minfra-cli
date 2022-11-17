@@ -15,7 +15,7 @@ module Minfra
         @deployment = deployment.freeze
         @cluster    = cluster.freeze || l!("cluster").id
         @result_path = config.status_path.join('stacks', @cluster, name)
-        puts "Stack selection: #{@name}, #{@config_path}, #{@cluster}, #{@result_path}"
+        debug "Stack selection: #{@name}, #{@config_path}, #{@cluster}, #{@result_path}"
       end
 
       def cluster_name
