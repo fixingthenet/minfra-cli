@@ -6,8 +6,6 @@ module Minfra
   module Cli
     # responsible the read the config file(s) and add a small abstraction layer on top of it
     class Config
-      include Logging
-      
       class ConfigNotFoundError < StandardError
       end
       class EnvironmentNotFoundError < StandardError

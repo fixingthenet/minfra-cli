@@ -1,3 +1,5 @@
+# 1.4.4
+ * fixing logging on fresh installs
 # 1.4.3
  * fixing exec for kubectl wrapper
  * more logger usage less puts
