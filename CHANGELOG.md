@@ -1,3 +1,6 @@
+# 1.5.0
+ * minfra project branch create now supports --prefix, keeps '-' (dash intact) and is config file configurable
+ * Minfra::Cli::Config deep merges personal config (again)
 # 1.4.4
  * fixing logging on fresh installs
 # 1.4.3

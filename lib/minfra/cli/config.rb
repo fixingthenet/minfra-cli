@@ -56,6 +56,11 @@ module Minfra
           @config = Hashie::Mash.new({})
         end
         @project = Hashie::Mash.new(JSON.parse(Minfra::Cli::Templater.render(File.read(@project_config_path),{})))
+        @project= @project.
+           deep_merge(@config)
+#           deep_merge(@project.environments[@orch_env]).
+#           deep_merge(@orch_env_config)
+
       end
 
       def load(orch_env)

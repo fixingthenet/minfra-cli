@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [[ -f "$MINFRA_PATH/config/env_setup" ]]; then
+  source $MINFRA_PATH/config/env_setup
+fi
+
+MINFRA_SHELL=${MINFRA_SHELL:-"/bin/bash"}
+CMD=${@:-$MINFRA_SHELL}
+
+echo "running: '$CMD'"
+
+exec $CMD
+

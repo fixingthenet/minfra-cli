@@ -14,3 +14,5 @@ vendor
 spec/docker-compose.run.yml
 
 minfra-cli-*.gem
+
+.rspec
