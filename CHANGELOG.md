@@ -1,3 +1,5 @@
+# 1.5.1
+ * fixing hiera lookup caching error
 # 1.5.0
  * minfra project branch create now supports --prefix, keeps '-' (dash intact) and is config file configurable
  * Minfra::Cli::Config deep merges personal config (again)

@@ -90,15 +90,15 @@ module Minfra
        return cache[value] if cache.has_key?(value)
 
        values=value.split(".")
-       value=values.shift
+       fst_value=values.shift
 
-       if special_lookups[value]
-         lookup_type={ merge_behavior: special_lookups[value]["merge"].to_sym }
+       if special_lookups[fst_value]
+         lookup_type={ merge_behavior: special_lookups[fst_value]["merge"].to_sym }
        else
          lookup_type=:deep
        end
 
-       result=hiera.lookup(value, default, scope, nil, lookup_type)
+       result=hiera.lookup(fst_value, default, scope, nil, lookup_type)
        if !values.empty? && result.kind_of?(Hash) # we return nil or the scalar value and only drill down on hashes
          result=result.dig(*values)
        end
