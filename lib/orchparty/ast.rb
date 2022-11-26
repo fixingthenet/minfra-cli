@@ -12,6 +12,18 @@ module Orchparty
       def get_binding
         binding
       end
+
+      def inspect(indent=0)
+        start="\n"
+        each_pair do |name, ast|
+          begin
+            start << "#{'  ' * indent}#{name}: #{ast.inspect(indent+1)}\n"
+          rescue ArgumentError
+            start << "#{'  ' * indent}#{name}: #{ast.inspect}\n"
+          end  
+        end
+        start
+      end
     end
 
     def self.hash(args = {})
@@ -34,9 +46,9 @@ module Orchparty
       Node.new({services: {}, _mixins: {}, _mix:[], volumes: {}, _variables: {}, networks: {}, _service_order: []}).merge(args)
     end
 
-    def self.all(args = {})
-      Node.new(_mix:[], _variables: {}).merge(args)
-    end
+    #def self.all(args = {})
+    #  Node.new(_mix:[], _variables: {}).merge(args)
+    #end
 
     def self.application_mixin(args = {})
       Node.new(_mix:[], _variables: {}).merge(args)
@@ -49,5 +61,6 @@ module Orchparty
     def self.chart(args = {})
       Node.new(_mix:[], _variables: {}, _services: []).merge(args)
     end
+
   end
 end
