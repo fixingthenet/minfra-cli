@@ -181,7 +181,7 @@ module Orchparty
           output_chart_path: output_chart_path,
           chart_name: chart.name,
         )
-        File.open(File.join(output_chart_path, 'values.yaml'),'w+') do |f|
+        File.open(File.join(output_chart_path, 'values.yaml'),'w+') do |helm_values|
           params.each do |app_name, subparams|
             subparams[:chart] = chart
             used_vars=generate_documents_from_erbs(
@@ -191,7 +191,7 @@ module Orchparty
               output_chart_path: output_chart_path
             )
             used_vars.each do |variable,value| 
-              f.puts "#{variable}: #{value}"
+              helm_values.puts "#{variable}: #{value}"
             end
           end
         end
