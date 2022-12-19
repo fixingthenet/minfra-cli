@@ -1,3 +1,6 @@
+# 1.6.0
+ * collecting things in used_vars 
+ * no overwriting of values.yaml between each char (as the helm template dir is shared)
 # 1.5.1
  * fixing hiera lookup caching error
 # 1.5.0
