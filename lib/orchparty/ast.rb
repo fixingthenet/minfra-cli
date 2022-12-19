@@ -46,9 +46,9 @@ module Orchparty
       Node.new({services: {}, _mixins: {}, _mix:[], volumes: {}, _variables: {}, networks: {}, _service_order: []}).merge(args)
     end
 
-    #def self.all(args = {})
-    #  Node.new(_mix:[], _variables: {}).merge(args)
-    #end
+    def self.all(args = {})
+      Node.new(_mix:[], _variables: {}).merge(args)
+    end
 
     def self.application_mixin(args = {})
       Node.new(_mix:[], _variables: {}).merge(args)
