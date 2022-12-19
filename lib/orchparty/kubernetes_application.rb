@@ -10,6 +10,8 @@ require 'active_support/core_ext'
 module Orchparty
   module Services
     class Context
+      include ::Minfra::Cli::Logging 
+
       attr_accessor :cluster_name
       attr_accessor :namespace
       attr_accessor :dir_path
@@ -157,35 +159,79 @@ module Orchparty
         end
       end
 
+
+      def print_install(chart)
+        
+        build_chart(chart) do |chart_path|
+          cmd="helm template --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}"
+          @out_io.puts `$cmd`
+          if system("#{cmd} > /dev/null")
+            info("helm template check: OK")
+          else
+            error("helm template check: FAIL")
+          end  
+        end
+        
+      end
+
+      def print_upgrade(chart)
+        print_install(chart)
+      end
+
+      def install(chart)
+        info("Install: #{chart}")
+        build_chart(chart) do |chart_path|
+          @out_io.puts system("helm install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}")
+        end
+      end
+
+      def upgrade(chart)
+        info("Upgrade: #{chart}")
+        build_chart(chart) do |chart_path|
+          @out_io.puts system("helm upgrade --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}")
+        end
+      end
+      private
+      
       def build_chart(chart)
+        
+        
+        dir = @app.status_dir.join('helm') # duplication
+        
         params = chart._services.map {|s| app_config.services[s.to_sym] }.map{|s| [s.name, s]}.to_h
-        dir = @app.status_dir.join('helm')
-        dir.mkpath
         run(templates_path: File.expand_path(chart.template, self.dir_path), params: params, output_chart_path: dir, chart: chart)
         yield dir
       end
 
-      def run(templates_path:, params:, output_chart_path:, chart: )
-        system("mkdir -p #{File.join(output_chart_path, 'templates')}")
 
-        system("cp #{File.join(templates_path, 'values.yaml')} #{File.join(output_chart_path, 'values.yaml')}")
-        system("cp #{File.join(templates_path, '.helmignore')} #{File.join(output_chart_path, '.helmignore')}")
-        system("cp #{File.join(templates_path, 'templates/_helpers.tpl')} #{File.join(output_chart_path, 'templates/_helpers.tpl')}")
+
+      # remember:
+      # this is done for an app
+      # that app can have multiple charts with multiple services!
+      
+      def run(templates_path:, params:, output_chart_path:, chart: )
 
         generate_chart_yaml(
           templates_path: templates_path,
           output_chart_path: output_chart_path,
           chart_name: chart.name,
         )
-        params.each do |app_name, subparams|
-          subparams[:chart] = chart
-          generate_documents_from_erbs(
-            templates_path: templates_path,
-            app_name: app_name,
-            params: subparams,
-            output_chart_path: output_chart_path
-          )
+        
+        File.open(File.join(output_chart_path, 'values.yaml'),'a') do |helm_values|
+          params.each do |app_name, subparams|
+            subparams[:chart] = chart
+            used_vars=generate_documents_from_erbs(
+              templates_path: templates_path,
+              app_name: app_name,
+              params: subparams,
+              output_chart_path: output_chart_path
+            )
+            used_vars.each do |variable,value| 
+              helm_values.puts "#{variable}: #{value}"
+            end
+          end
         end
+        
       end
 
       def generate_documents_from_erbs(templates_path:, app_name:, params:, output_chart_path:)
@@ -195,23 +241,28 @@ module Orchparty
         end
 
         kind = params.fetch(:kind)
+        params._used_vars = {} #here we'll collect all used vars
+
         Dir[File.join(templates_path, kind, '*.erb')].each do |template_path|
-          puts "Rendering Template: #{template_path}"
+          info("Rendering Template: #{template_path}")
           template_name = File.basename(template_path, '.erb')
           output_path = File.join(output_chart_path, 'templates', "#{app_name}-#{template_name}")
-
+          
           template = Erubis::Eruby.new(File.read(template_path))
           template.filename = template_path
+
+          params.app = @app
           params.app_name = app_name
           params.templates_path = templates_path
           begin
             document = template.result(CleanBinding.new.get_binding(params))
           rescue Exception
-            puts "#{template_path} has a problem: #{$!.inspect}"
+            error "#{template_path} has a problem: #{$!.inspect}"
             raise
           end
           File.write(output_path, document)
         end
+        params._used_vars
       end
 
       def generate_chart_yaml(templates_path:, output_chart_path:, chart_name: )
@@ -224,34 +275,13 @@ module Orchparty
         document = template.result(CleanBinding.new.get_binding(params))
         File.write(output_path, document)
       end
-
-      def print_install(chart)
-        build_chart(chart) do |chart_path|
-          @out_io.puts `helm template --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}`
-        end
-      end
-
-      def print_upgrade(chart)
-        print_install(chart)
-      end
-
-      def install(chart)
-        build_chart(chart) do |chart_path|
-          @out_io.puts system("helm install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}")
-        end
-      end
-
-      def upgrade(chart)
-        build_chart(chart) do |chart_path|
-          system("cp -a #{chart_path} /tmp/latest-chart")
-          @out_io.puts system("helm upgrade --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}")
-        end
-      end
     end
   end
 end
 
 class KubernetesApplication
+  include Minfra::Cli::Logging
+
   attr_accessor :cluster_name
   attr_accessor :file_path
   attr_accessor :namespace
@@ -259,7 +289,7 @@ class KubernetesApplication
   attr_reader :status_dir
 
   def initialize(app_config: [], namespace:, cluster_name:, file_name:, status_dir:, out_io: STDOUT)
-    self.file_path = Pathname.new(file_name).parent.expand_path
+    self.file_path = Pathname.new(file_name).parent.expand_path #path of the stack
     self.cluster_name = cluster_name
     self.namespace = namespace
     self.app_config = app_config
@@ -279,6 +309,22 @@ class KubernetesApplication
     each_service("print_#{method}".to_sym)
   end
 
+  private
+  def prepare
+    output_chart_path = @status_dir.join('helm')
+    output_chart_path.rmtree
+    output_chart_path.mkpath
+    templates_path = file_path.join('../../chart-templates').expand_path #don't ask. the whole concept of multiple charts in an app stinks...
+    
+    info("generating base helm structure from: #{output_chart_path} from #{templates_path}")
+    system("mkdir -p #{File.join(output_chart_path, 'templates')}")
+
+    system("cp #{File.join(templates_path, 'values.yaml')} #{File.join(output_chart_path, 'values.yaml')}")
+    system("cp #{File.join(templates_path, '.helmignore')} #{File.join(output_chart_path, '.helmignore')}")
+    system("cp #{File.join(templates_path, 'templates/_helpers.tpl')} #{File.join(output_chart_path, 'templates/_helpers.tpl')}")
+
+  end
+  
   def combine_charts(app_config)
     services = app_config._service_order.map(&:to_s)
     app_config._service_order.each do |name|
@@ -293,11 +339,20 @@ class KubernetesApplication
   end
 
   def each_service(method)
+    prepare
     services = combine_charts(app_config)
     services.each do |name|
       service = app_config[:services][name]
-      puts "Service: #{name}(#{service._type}) #{method}"
-      "::Orchparty::Services::#{service._type.classify}".constantize.new(cluster_name: cluster_name, namespace: namespace, file_path: file_path, app_config: app_config, out_io: @out_io, app: self).send(method, service)
+      info "Service: #{name}(#{service._type}) #{method}"
+      deployable_class="::Orchparty::Services::#{service._type.classify}".constantize
+      deployable=deployable_class.new(cluster_name: cluster_name, 
+                     namespace: namespace, 
+                     file_path: file_path, 
+                     app_config: app_config, 
+                     out_io: @out_io, 
+                     app: self)
+                     
+      deployable.send(method, service)
     end
   end
 end
