@@ -312,7 +312,7 @@ class KubernetesApplication
   private
   def prepare
     output_chart_path = @status_dir.join('helm')
-    output_chart_path.rmtree
+    output_chart_path.rmtree if File.exists?(output_chart_path)
     output_chart_path.mkpath
     templates_path = file_path.join('../../chart-templates').expand_path #don't ask. the whole concept of multiple charts in an app stinks...
     
