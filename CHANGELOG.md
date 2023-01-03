@@ -1,3 +1,6 @@
+# 1.6.1
+ * adding minfra_path to hiera scope
+ * fixing state preparation when state dir not yet there
 # 1.6.0
  * collecting things in used_vars 
  * no overwriting of values.yaml between each char (as the helm template dir is shared)
