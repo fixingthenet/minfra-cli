@@ -1,3 +1,6 @@
+# 1.6.2
+ * fixing templater 
+ * generating Chart.yaml only once with the namespaces name
 # 1.6.1
  * adding minfra_path to hiera scope
  * fixing state preparation when state dir not yet there
