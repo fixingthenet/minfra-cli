@@ -179,7 +179,7 @@ module Orchparty
       end
 
       def install(chart)
-        info("Install: #{chart}")
+        info("Install: #{chart.name}")
         build_chart(chart) do |chart_path|
           @out_io.puts system("helm install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}")
         end
@@ -211,11 +211,6 @@ module Orchparty
       
       def run(templates_path:, params:, output_chart_path:, chart: )
 
-        generate_chart_yaml(
-          templates_path: templates_path,
-          output_chart_path: output_chart_path,
-          chart_name: chart.name,
-        )
         
         File.open(File.join(output_chart_path, 'values.yaml'),'a') do |helm_values|
           params.each do |app_name, subparams|
@@ -265,16 +260,6 @@ module Orchparty
         params._used_vars
       end
 
-      def generate_chart_yaml(templates_path:, output_chart_path:, chart_name: )
-        template_path = File.join(templates_path, 'Chart.yaml.erb')
-        output_path = File.join(output_chart_path, 'Chart.yaml')
-
-        template = Erubis::Eruby.new(File.read(template_path))
-        template.filename = template_path
-        params = Hashie::Mash.new(chart_name: chart_name)
-        document = template.result(CleanBinding.new.get_binding(params))
-        File.write(output_path, document)
-      end
     end
   end
 end
@@ -311,11 +296,18 @@ class KubernetesApplication
 
   private
   def prepare
+    
     output_chart_path = @status_dir.join('helm')
     output_chart_path.rmtree if output_chart_path.exist?
     output_chart_path.mkpath
     templates_path = file_path.join('../../chart-templates').expand_path #don't ask. the whole concept of multiple charts in an app stinks...
     
+    generate_chart_yaml(
+          templates_path: templates_path,
+          output_chart_path: output_chart_path,
+          chart_name: namespace,
+    )
+
     info("generating base helm structure from: #{output_chart_path} from #{templates_path}")
     system("mkdir -p #{File.join(output_chart_path, 'templates')}")
 
@@ -323,6 +315,14 @@ class KubernetesApplication
     system("cp #{File.join(templates_path, '.helmignore')} #{File.join(output_chart_path, '.helmignore')}")
     system("cp #{File.join(templates_path, 'templates/_helpers.tpl')} #{File.join(output_chart_path, 'templates/_helpers.tpl')}")
 
+  end
+
+  def generate_chart_yaml(templates_path:, output_chart_path:, chart_name: )
+    template_path = File.join(templates_path, 'Chart.yaml.erb')
+    output_path = File.join(output_chart_path, 'Chart.yaml')
+
+    res=Minfra::Cli::Templater.read(template_path, params: {chart_name: chart_name})
+    File.write(output_path, res)
   end
   
   def combine_charts(app_config)
