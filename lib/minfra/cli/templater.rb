@@ -14,7 +14,7 @@ module Minfra
             raise "file #{path} not found"
           end
         end  
-        render(template, params)
+        render(content, params)
       end
       
       def self.render(template, params)
