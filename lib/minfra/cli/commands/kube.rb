@@ -105,7 +105,7 @@ module Minfra
 
 
         run_cmd(["cd #{stack.release_path}",
-                 "git --no-pager diff #{stack.compose_path}",
+                 "git --no-pager diff #{stack.release_path}",
         ], :bash, silence: true)
 
         errors = stack.check_plan
@@ -118,7 +118,7 @@ module Minfra
         end
 
         unless test
-          unless @config.dev?
+          unless @config.dev? || options[:force]==true
             unless Ask.boolean("Are the changes ok?")
               exit_error("Deployment aborted!")
             end
