@@ -30,6 +30,7 @@ module Minfra
       option :install, type: :boolean
       option :test, type: :boolean
       option :opts
+      option :force, type: :boolean
       def deploy(stack_name, message='')
         kube.deploy(stack_name, message)
       end
