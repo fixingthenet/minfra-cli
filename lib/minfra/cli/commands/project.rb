@@ -64,9 +64,9 @@ module Minfra
         end
           
         cmd = %{docker build #{"--target #{target}" if target} -t #{p.repo_name}:latest #{p.app_dir}}
-        # Runner.run(cmd) # this gives us no output ... don't like that
-        puts "running: #{cmd}"
-        `#{cmd}` || exit(1)
+        res = Runner.run(cmd)
+        exit(1) if res.error?
+        
         unless options[:noload]
           debug("loading int KIND")
           Runner.run(%{kind load docker-image #{p.repo_name}:latest --name #{@minfra_config.name}})
