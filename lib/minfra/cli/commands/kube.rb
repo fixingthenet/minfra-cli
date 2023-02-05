@@ -124,11 +124,6 @@ module Minfra
             end
           end
 
-#          deploy_cmd = bash_cmd
-#          deploy_cmd << "#{env_cmd} orchparty #{method} -c #{cluster} -f #{stack.stack_rb_path}  -a #{stack.name}"
-
-          reason_message = tag_changed_to(release_path: stack.release_path) if reason_message.blank?
-
           message =  "deploying stack #{stack.name}: #{reason_message}."
           Minfra::Cli::Document.document(@config,"started #{message}")
           orch=Orchparty::App.new(cluster_name: cluster, 
@@ -238,16 +233,6 @@ module Minfra
       end
 
       private
-
-      def tag_changed_to(release_path:)
-        return '' if @config.dev? # We don't use messages in dev
-
-        diff = run_cmd("cd #{release_path} && git --no-pager diff --unified=0 tags.json").split %r{(\d{4}_\d{2}_\d{2}T\d{2}_\d{2}_\d{2}Z)}
-
-        raise ArgumentError.new "#{release_path}/tags.json has not changed - supply message" if diff.empty?
-
-        diff[3]
-      end
 
       def init(stack_name, env, deployment, explicit_cluster)
         template = Minfra::Cli::StackM::KubeStackTemplate.new(stack_name,

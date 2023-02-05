@@ -26,6 +26,7 @@ module Minfra
   module Cli
 
     extend Minfra::Cli::Logging
+    include Minfra::Cli::Hook
 
     def self.logger
       @logger
@@ -144,16 +145,5 @@ module Minfra
       end
     end
 
-    def self.subcommand(name)
-      @subcommands[name.to_sym]&.command
-    end
-
-    def self.before_hook(subcommand, command, &block)
-      subcommand(subcommand).before_hook(command, &block)
-    end
-
-    def self.after_hook(subcommand, command, &block)
-      subcommand(subcommand).after_hook(command, &block)
-    end
   end
 end

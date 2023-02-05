@@ -6,7 +6,7 @@ module Minfra
       option :cluster
       option :stack, required: true
       def kube(*args)
-        kube = Kube.new(options, @minfra_config)
+        kube = Kube.new(options, minfra_config)
         kube.kubectl_command(args)
       end
 

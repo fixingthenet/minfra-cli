@@ -10,7 +10,7 @@ module Minfra
       desc "describe","get information about a stack"
       option :environment, aliases: ['-e']
       def describe
-        pp @minfra_config.describe(options["environment"])
+        pp minfra_config.describe(options["environment"])
       end
 
       desc "dashboard <stack_name>", "openening a dashboard for a stack"
@@ -112,7 +112,7 @@ module Minfra
 
        private
        def kube
-         Kube.new(options, @minfra_config)
+         Kube.new(options, minfra_config)
        end
     end
   end

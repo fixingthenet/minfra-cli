@@ -69,7 +69,7 @@ module Minfra
         
         unless options[:noload]
           debug("loading int KIND")
-          Runner.run(%{kind load docker-image #{p.repo_name}:latest --name #{@minfra_config.name}})
+          Runner.run(%{kind load docker-image #{p.repo_name}:latest --name #{minfra_config.name}})
         end  
       end
 
@@ -103,7 +103,7 @@ module Minfra
 
       private
       def run_pre_repo
-        Runner.run(%{#{@minfra_config.base_path.join('hooks','pre_repo.sh')}})
+        Runner.run(%{#{minfra_config.base_path.join('hooks','pre_repo.sh')}})
       end
     end
   end
