@@ -2,16 +2,17 @@ require 'thor'
 require 'open3'
 require 'json'
 require 'ostruct'
-require 'orchparty'
 require 'hiera'
 
 require_relative 'cli/logging'
+require_relative 'cli/templater'
+
+require 'orchparty'
 require_relative 'cli/config'
 require_relative 'cli/version'
 require_relative 'cli/hook'
 require_relative 'cli/common'
 require_relative 'cli/command'
-require_relative 'cli/templater'
 require_relative 'cli/ask'
 require_relative 'cli/document'
 require_relative 'cli/runner'
@@ -79,7 +80,7 @@ module Minfra
       hiera_main_path=@hiera_root.join("hieradata/#{config.project.minfra.hiera.env_path}/#{env}.eyaml")
       raise("unknown environment #{env}, I expact a file at #{hiera_main_path}") unless hiera_main_path.exist? 
 
-      scope={ "hieraroot" => @hiera_root.to_s, "env" => env}
+      scope={ "minfra_path" => ENV["MINFRA_PATH"], "hieraroot" => @hiera_root.to_s, "env" => env}
       special_lookups=hiera.lookup("lookup_options", {},  scope, nil, :priority)
       
       node_scope=hiera.lookup("env", {},  scope, nil, :deeper)
