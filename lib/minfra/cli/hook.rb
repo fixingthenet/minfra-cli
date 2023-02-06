@@ -39,7 +39,7 @@ module Minfra
         end
 
         def match?(type, names)
-         @type == type && @names == names
+         @type == type && @names == names.map(&:to_sym)
         end
 
         def exec (obj)
@@ -48,6 +48,7 @@ module Minfra
       end
 
       class Hooker
+        include Logging
         def initialize(klass)
           @klass=klass
           @hooks=[]
@@ -62,11 +63,17 @@ module Minfra
         end
 
         def call_before_hooks(obj, names)
-          @hooks.select do |h| h.match?(:before, names) end.each do |h| h.exec(obj) end
+          @hooks.select do |h| h.match?(:before, names) end.each do |h| 
+            debug("Hook before: #{names.join(',')}")
+            h.exec(obj) 
+          end
         end
 
         def call_after_hooks(obj,names)
-          @hooks.select do |h| h.match?(:after, names) end.each do |h| h.exec(obj) end
+          @hooks.select do |h| h.match?(:after, names) end.each do |h| 
+            debug("Hook  after: #{names.join(',')}")
+            h.exec(obj) 
+          end
         end
       end
 
@@ -82,7 +89,7 @@ module Minfra
           hooks.register_before(names, block)
         end
         def call_before_hooks(obj,names)
-          @hooks.call_before_hooks(obj,names.map(&:to_sym))
+          @hooks.call_before_hooks(obj,names)
         end
         def call_after_hooks(obj,names)
           @hooks.call_after_hooks(obj,names)
