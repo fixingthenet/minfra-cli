@@ -17,13 +17,7 @@ module Minfra
         ensure_path_and_template(config.config_path, config.base_path.join('config','me_config.json.erb'))
         config.init!
         config.load('dev')
-        templates_path=Minfra::Cli.root_path.join("templates")
-        ensure_path_and_template(config.kube_config_path, templates_path.join('kube_config.yaml.erb'))
-        ensure_path_and_template(config.kind_config_path, config.base_path.join('config','kind.yaml.erb'),
-                                 {ip: config.project.kind.panel.ip,
-                                  name: config.project.name,
-                                  host_path: config.base_path
-                                 })
+        
       end
 
       def ensure_path_and_template(dest_path, template_path, params={})

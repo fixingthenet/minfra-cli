@@ -42,7 +42,7 @@ module Minfra
         @status_path = @base_path.join('state')
         @kube_path=@me_path.join('kube')
         @kube_config_path=@kube_path.join('config')
-        @kind_config_path=@me_path.join("kind.yaml.erb")
+        @kind_config_path=@me_path.join("kind.yaml")
 
 #        @project_minfrarc_path = @base_path.join("config",'minfrarc.rb')
 #        require @project_minfrarc_path if @project_minfrarc_path.exist?

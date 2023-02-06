@@ -40,7 +40,10 @@ module Minfra
 
         info "step: creating '#{kind_name}' kind cluster (can take some minutes)"
         kind_kube_path=Runner.run('echo $KUBECONFIG').to_s.strip
-        info run(%{KIND_EXPERIMENTAL_DOCKER_NETWORK=#{kind_name} kind create cluster --name "#{kind_name}" --config #{@config.kind_config_path}})
+        kind_config=Templater.read(config.base_path.join('config','kind.yaml.erb'), params: {config: config})
+        File.write(config.kind_config_path, kind_config)
+                                 
+        run(%{KIND_EXPERIMENTAL_DOCKER_NETWORK=#{kind_name} kind create cluster --name "#{kind_name}" --config #{@config.kind_config_path}})
 
         info "step: configuring kind"
         run %{docker exec #{kind_name}-control-plane bash -c "sed -e '/nameserver 127.0.0.11/ s/^#*/#/'  /etc/resolv.conf | cat - >> /etc/resolv.conf"}
