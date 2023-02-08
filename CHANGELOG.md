@@ -1,3 +1,5 @@
+# 1.7.1
+ * fix plugin install edge cases
 # 1.7.0
  * rewrite of hooks system
  * deprecation of me/kind.yaml.erb (breaking change as config/kind.yaml.erb the whole config object is passed

@@ -89,10 +89,10 @@ module Minfra
           hooks.register_before(names, block)
         end
         def call_before_hooks(obj,names)
-          @hooks.call_before_hooks(obj,names)
+          hooks.call_before_hooks(obj,names)
         end
         def call_after_hooks(obj,names)
-          @hooks.call_after_hooks(obj,names)
+          hooks.call_after_hooks(obj,names)
         end
         private
         def hooks
