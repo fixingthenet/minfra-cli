@@ -1,3 +1,7 @@
+# 1.7.0
+ * rewrite of hooks system
+ * deprecation of me/kind.yaml.erb (breaking change as config/kind.yaml.erb the whole config object is passed
+ * improving Minfra::Cli::Runner to stream output
 # 1.6.2
  * fixing templater 
  * generating Chart.yaml only once with the namespaces name
