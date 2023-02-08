@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    minfra-cli (1.6.2)
+    minfra-cli (1.7.0)
       activesupport (~> 6.1)
       erubis (~> 2.7)
       hashie (~> 3.5)
