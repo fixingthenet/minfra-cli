@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+require 'English'
 require 'open3'
 
 module Minfra
@@ -5,16 +8,16 @@ module Minfra
     class Runner
       class Result
         include Logging
-        
+
         attr_writer :status
-        
+
         def initialize
-          @stderr_lines=[]
-          @stdout_lines=[]
-          @status=nil
+          @stderr_lines = []
+          @stdout_lines = []
+          @status = nil
         end
-        
-        def add(line, stream=:stdout)
+
+        def add(line, stream = :stdout)
           line.chomp!
           if stream == :stdout
             @stdout_lines << line
@@ -24,7 +27,7 @@ module Minfra
             error line
           end
         end
-           
+
         def success?
           @status.success?
         end
@@ -36,11 +39,11 @@ module Minfra
         def stdout
           @stdout_lines.join("\n")
         end
-        
+
         def stderr
           @stderr_lines.join("\n")
-        end  
-        
+        end
+
         def to_s
           stdout
         end
@@ -52,39 +55,46 @@ module Minfra
       end
 
       attr_reader :exit_on_error
+
       def initialize(cmd, exit_on_error: true)
-        @cmd=cmd
+        @cmd = cmd
         @exit_on_error = exit_on_error
       end
 
       def run
         debug("running: #{@cmd}")
-        res=nil
+        res = nil
         begin
-          res=Result.new
+          res = Result.new
           # see: http://stackoverflow.com/a/1162850/83386
-          Open3.popen3(@cmd) do |stdin, stdout, stderr, thread|
+          # the whole implementation is problematic as we migth miss some output lines
+          # Open4 might be a solution. Using Select might be a solution. Using Process.fork might be a solution....
+          Open3.popen3(@cmd) do |_stdin, stdout, stderr, thread|
             # read each stream from a new thread
-            { :stdout => stdout, :stderr => stderr }.each do |key, stream|
+            { stdout: stdout, stderr: stderr }.each do |key, stream|
               Thread.new do
-                until (raw_line = stream.gets).nil? do
+                until (raw_line = stream.gets).nil?
+                  #                   stream.each do |raw_line|
                   res.add(raw_line, key)
                 end
+              rescue IOError # happens when you read from a close stream
+                raise unless ['stream closed in another thread', 'closed stream'].include?($ERROR_INFO.message)
+                # warn("Caught: #{$ERROR_INFO.message} for #{@cmd}")
               end
             end
             thread.join # don't exit until the external process is done
             res.status = thread.value
           end
-        rescue
+        rescue StandardError
         end
-        
+
         if res.error?
           error "command failed: #{@cmd}"
           info  res.stdout
           error res.stderr
         end
         if exit_on_error && res.error?
-          info "exiting on error"
+          info 'exiting on error'
           exit 1
         end
         res
