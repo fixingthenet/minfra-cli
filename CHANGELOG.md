@@ -1,3 +1,5 @@
+# next
+ * catching closed stream errors in Minfra::Cli::Runner
 # 1.7.1
  * fix plugin install edge cases
 # 1.7.0
