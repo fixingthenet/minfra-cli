@@ -49,7 +49,7 @@ module Minfra
               begin
                 require minfra_path # this should register the command
               rescue LoadError
-                 logger.warn("Minfra plugin detected but dependencies not installed: #{minfra_path} (try: minfra plugin install)")
+                 logger.warn("Minfra plugin detected but dependencies not installed: #{minfra_path} (#{$!}). TRY: minfra plugin install")
               end 
             end  
           else
