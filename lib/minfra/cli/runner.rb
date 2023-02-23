@@ -28,6 +28,10 @@ module Minfra
           end
         end
 
+        def exitstatus
+          @status.exitstatus
+        end
+        
         def success?
           @status.success?
         end
@@ -90,11 +94,11 @@ module Minfra
 
         if res.error?
           error "command failed: #{@cmd}"
-          info  res.stdout
-          error res.stderr
+          debug  res.stdout
+          info  res.stderr
         end
         if exit_on_error && res.error?
-          info 'exiting on error'
+          info "command exiting on error (#{res.exitstatus})"
           exit 1
         end
         res

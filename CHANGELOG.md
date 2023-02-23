@@ -1,5 +1,8 @@
-# next
+# 1.8.0
+ * more output which "require" failed when loading dependencies
  * catching closed stream errors in Minfra::Cli::Runner
+ * stderr of runner goes to info
+ * stdout of runner goes to debug
 # 1.7.1
  * fix plugin install edge cases
 # 1.7.0
