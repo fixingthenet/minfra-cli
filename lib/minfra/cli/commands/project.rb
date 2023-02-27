@@ -40,7 +40,7 @@ module Minfra
         ARGV.delete('project') # ARGV is passed along to `rspec` call
         ARGV.delete('test')
 
-        if File.exists?('./bin/run_tests')
+        if File.exist?('./bin/run_tests')
           # config = Config.load('staging')
           project = ProjectInfo.load(Pathname.pwd)
           # Minfra::Cli::Document.document(config, "Using project specific ./bin/run_tests in #{project.name}")
