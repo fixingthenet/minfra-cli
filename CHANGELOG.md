@@ -1,3 +1,6 @@
+# 1.9.0
+ * helm template now called with --debug
+ * added "file" to service
 # 1.8.0
  * more output which "require" failed when loading dependencies
  * catching closed stream errors in Minfra::Cli::Runner

@@ -331,6 +331,7 @@ module Orchparty
 
       def initialize(name, type)
         super AST.service(name: name, _type: type)
+        @node.files = {}
       end
 
       # 1. rememebring the secrets in environment_secrets (so these environments can be created differentyly
@@ -339,6 +340,18 @@ module Orchparty
         result = HashBuilder.build(block)
         @node.environment_secrets = result
         self
+      end
+
+      def file(name, volume, &block)
+        result = FileBuilder.build(name, volume, block)
+        @node.files[name]=result
+        self
+      end
+    end
+
+    class FileBuilder < CommonBuilder
+      def initialize(name, volume)
+        super AST.service(filename: name, volume: volume)
       end
     end
 
