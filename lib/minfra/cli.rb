@@ -47,6 +47,12 @@ module Minfra
 
      @logger=Logger.new(STDERR)
      logger.level=ENV["MINFRA_LOGGING_LEVEL"] || @config.project.minfra.logging_level || 'warn'
+
+     project_minfrarc_path = @config.base_path.join("config",'minfrarc.rb')
+     require project_minfrarc_path if project_minfrarc_path.exist?
+     me_minfrarc_path = @config.me_path.join('minfrarc.rb')
+     require @me_minfrarc_path if me_minfrarc_path.exist?
+
      @logger.debug("Minfra: loglevel: #{@logger.level}, env: #{@config.orch_env}")
      
      hiera_init
@@ -58,10 +64,7 @@ module Minfra
      require_relative 'cli/main_command'
      Minfra::Cli.resolve
 
-     project_minfrarc_path = @config.base_path.join("config",'minfrarc.rb')
-     require project_minfrarc_path if project_minfrarc_path.exist?
-     me_minfrarc_path = @config.me_path.join('minfrarc.rb')
-     require @me_minfrarc_path if me_minfrarc_path.exist?
+
      
     end
     

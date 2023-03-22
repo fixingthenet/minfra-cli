@@ -24,7 +24,7 @@ module Minfra
             debug line
           else
             @stderr_lines << line
-            error line
+            info line
           end
         end
 

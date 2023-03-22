@@ -40,7 +40,7 @@ module Minfra
         ARGV.delete('project') # ARGV is passed along to `rspec` call
         ARGV.delete('test')
 
-        if File.exists?('./bin/run_tests')
+        if File.exist?('./bin/run_tests')
           # config = Config.load('staging')
           project = ProjectInfo.load(Pathname.pwd)
           # Minfra::Cli::Document.document(config, "Using project specific ./bin/run_tests in #{project.name}")
@@ -68,7 +68,7 @@ module Minfra
         exit(1) if res.error?
         
         unless options[:noload]
-          debug("loading int KIND")
+          debug("loading image into KIND's registry")
           Runner.run(%{kind load docker-image #{p.repo_name}:latest --name #{minfra_config.name}})
         end  
       end

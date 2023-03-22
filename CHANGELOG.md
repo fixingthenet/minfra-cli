@@ -1,6 +1,11 @@
 # 1.9.0
  * helm template now called with --debug
  * added "file" to service
+ * ready for ruby 3.2
+ * fixing project build "loading int " typo
+ * changing init sequence (first load minfrarc)
+ * STDERR of external commands is now written as INFO
+
 # 1.8.0
  * more output which "require" failed when loading dependencies
  * catching closed stream errors in Minfra::Cli::Runner
