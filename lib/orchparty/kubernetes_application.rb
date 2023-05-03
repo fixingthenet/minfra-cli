@@ -222,7 +222,7 @@ module Orchparty
               output_chart_path: output_chart_path
             )
             used_vars.each do |variable,value| 
-              helm_values.puts "#{variable}: #{value}"
+              helm_values.puts "#{variable}: \"#{value}\""
             end
           end
         end

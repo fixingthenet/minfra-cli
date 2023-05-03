@@ -1,3 +1,6 @@
+# 1.10.0
+ * project.json supports exec_params
+ * helm values are all strings (so helm doesn't convert them)
 # 1.9.0
  * helm template now called with --debug
  * added "file" to service
