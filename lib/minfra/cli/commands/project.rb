@@ -77,7 +77,7 @@ module Minfra
       def exec(cmd='/bin/bash')
         p=ProjectInfo.load(Pathname.pwd)
         run_pre_repo
-        Kernel.exec(%{docker run -ti --rm  -v #{p.app_dir}:/code #{p.repo_name}:latest #{cmd}})
+        Kernel.exec(%{docker run -ti --rm  #{p.exec_params} -v #{p.app_dir}:/code #{p.repo_name}:latest #{cmd}})
       end
 
       desc "push", "push directly to the repo"
