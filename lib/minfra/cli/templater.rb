@@ -21,6 +21,26 @@ module Minfra
         new(template).render(params)
       end
 
+      def self.template_dir(src, dst, extensions)
+        destination = Pathname.new(dst)
+        destination.mkpath
+        source = Pathname.new(src)
+        
+        source.glob('**/*') do |filename|
+          rel_path = filename.relative_path_from(source)
+
+          if File.directory?(filename) # check if it s  file and extension is not .tf
+            FileUtils.mkdir_p("#{destination}/#{rel_path}")
+          elsif extensions.include?(File.extname(filename)) # a file
+            content = File.read(filename)
+            modified_content = Minfra::Cli::Templater.render(content, {})
+            File.write("#{destination}/#{rel_path}", modified_content)
+          else
+            FileUtils.cp(filename, destination.join(rel_path))
+          end
+        end
+      end
+      
       def initialize(template)
         @erb = ERB.new(template)
         @check_mode=false

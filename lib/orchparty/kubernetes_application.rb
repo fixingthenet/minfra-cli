@@ -163,7 +163,7 @@ module Orchparty
       def print_install(chart)
         
         build_chart(chart) do |chart_path|
-          cmd="helm template --namespace #{namespace} --debug --kube-context #{cluster_name} #{chart.name} #{chart_path}"
+          cmd="helm template --namespace #{namespace} --debug --kube-context #{cluster_name} --output-dir #{chart_path.join('..','helm_expanded')}   #{chart.name} #{chart_path}"
           @out_io.puts `$cmd`
           if system("#{cmd} > /dev/null")
             info("helm template check: OK")
