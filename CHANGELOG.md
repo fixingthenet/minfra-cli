@@ -1,4 +1,5 @@
 # 1.11.0
+ * generating helm output with resolved vairables in "helm_expanded"
  * adding template_dir to templater to render whole directories
 # 1.10.0
  * project.json supports exec_params
