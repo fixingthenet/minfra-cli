@@ -1,3 +1,5 @@
+# 1.11.0
+ * adding template_dir to templater to render whole directories
 # 1.10.0
  * project.json supports exec_params
  * helm values are all strings (so helm doesn't convert them)
