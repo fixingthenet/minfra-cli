@@ -16,6 +16,8 @@ require_relative 'cli/command'
 require_relative 'cli/ask'
 require_relative 'cli/document'
 require_relative 'cli/runner'
+require_relative 'cli/helm_runner'
+require_relative 'cli/kubectl_runner'
 require_relative 'cli/plugins'
 
 require 'active_support'

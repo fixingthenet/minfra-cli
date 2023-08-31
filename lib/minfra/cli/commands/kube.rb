@@ -15,7 +15,10 @@ module Minfra
 
       def dashboard(stack_name,env,deployment,cluster)
         stack = init(stack_name,env,deployment,cluster)
-        exec("k9s --kubeconfig #{kube_config_path} --context #{stack.cluster_name} --namespace #{stack_name} --command pod")
+        insecure_flag = l("infra::allow_insecure_k8s_connections") ? "--insecure-skip-tls-verify" : ""
+        cmd = "k9s #{insecure_flag} --kubeconfig #{kube_config_path} --context #{stack.cluster_name} --namespace #{stack_name} --command pod"
+        debug(cmd)
+        exec(cmd)
       end
 
       def restart
@@ -154,9 +157,7 @@ module Minfra
 
         extra_args = extra_args.join(' ')
 
-        cmd = "helm --kube-context #{cluster} rollback #{options[:stack]} #{extra_args}"
-        #puts cmd
-        run_cmd(cmd, :exec)
+        run_helm("--kube-context #{cluster} rollback #{options[:stack]} #{extra_args}")
       end
 
       def list
@@ -195,9 +196,9 @@ module Minfra
 
         cluster = stack.cluster_name
         if [resource, implicit_resource].include?('pod') && ['delete', 'describe', 'exec', 'logs', 'port-forward'].include?(subcommand)
-          cmd_get_pods = "kubectl --kubeconfig #{kube_config_path} --context #{cluster} --namespace #{options[:stack]} get pod -o jsonpath='{range .items[*]}{.metadata.name}{\"\\n\"}'"
+          cmd_get_pods = "--kubeconfig #{kube_config_path} --context #{cluster} --namespace #{options[:stack]} get pod -o jsonpath='{range .items[*]}{.metadata.name}{\"\\n\"}'"
 
-          pods_list = run_cmd(cmd_get_pods).split("\n")
+          pods_list = run_kubectl(cmd_get_pods).stdout_lines
 
           fuzzy_pod_name = args.shift
 
@@ -230,9 +231,8 @@ module Minfra
 
         extra_args = extra_args.join(' ')
 
-        cmd = "kubectl --kubeconfig #{kube_config_path} --context #{cluster} --namespace #{options[:stack]} #{subcommand} #{resource} #{pod_name} #{extra_args}"
-        # puts cmd
-        run_cmd(cmd, :exec)
+        cmd = "--kubeconfig #{kube_config_path} --context #{cluster} --namespace #{options[:stack]} #{subcommand} #{resource} #{pod_name} #{extra_args}"
+        KubeCtlRunner.run(cmd, runner: :exec)
       end
 
       private
@@ -252,13 +252,11 @@ module Minfra
       end
 
       def run_kubectl(cmd)
-        #        run(%{kubectl --kubeconfig #{kube_config_path} #{cmd}})
-        run(%{kubectl #{cmd}})
+        KubeCtlRunner.run(cmd, runner: :system)
       end
 
       def run_helm(cmd)
-#        run(%{helm --kubeconfig #{kube_config_path} --home #{helm_path} #{cmd}})
-        run(%{helm #{cmd}})
+        HelmRunner.run(cmd, runner: :system)
       end
 
       def helm_path

@@ -11,6 +11,8 @@ module Minfra
 
         attr_writer :status
 
+        attr_reader :stdout_lines
+        
         def initialize
           @stderr_lines = []
           @stdout_lines = []
@@ -60,16 +62,56 @@ module Minfra
 
       attr_reader :exit_on_error
 
-      def initialize(cmd, exit_on_error: true)
+      def initialize(cmd, exit_on_error: true, runner: :popen)
         @cmd = cmd
         @exit_on_error = exit_on_error
+        @runner = runner
       end
 
       def run
-        debug("running: #{@cmd}")
-        res = nil
+        debug("running (#{@system}): #{@cmd}")
+        res=case @runner
+          when :system
+            run_system(Result.new)
+          when :popen  
+            run_threaded(Result.new)
+          when :exec
+            run_exec(Result.new)  
+          else
+            raise "unknown runner #{@runner}"  
+        end
+        
+        if res.error?
+          error "command failed: #{@cmd}"
+          debug  res.stdout
+          info  res.stderr
+        end
+        if exit_on_error && res.error?
+          info "command exiting on error (#{res.exitstatus})"
+          exit 1
+        end
+        res
+      end
+      
+      private
+
+      def run_exec(_res)
+        exec(@cmd)
+      end
+      # you don't get stderr .... yet
+      def run_system(res)
+        #https://stackoverflow.com/questions/6338908/ruby-difference-between-exec-system-and-x-or-backticks
         begin
-          res = Result.new
+          out=`#{@cmd}`
+          out.each_line do |line| res.add(line, :stdout) end 
+        rescue StandardError
+        end
+        res.status = $?
+        res
+      end
+      
+      def run_threaded(res)
+        begin
           # see: http://stackoverflow.com/a/1162850/83386
           # the whole implementation is problematic as we migth miss some output lines
           # Open4 might be a solution. Using Select might be a solution. Using Process.fork might be a solution....
@@ -91,18 +133,9 @@ module Minfra
           end
         rescue StandardError
         end
-
-        if res.error?
-          error "command failed: #{@cmd}"
-          debug  res.stdout
-          info  res.stderr
-        end
-        if exit_on_error && res.error?
-          info "command exiting on error (#{res.exitstatus})"
-          exit 1
-        end
         res
       end
+      
     end
   end
 end
