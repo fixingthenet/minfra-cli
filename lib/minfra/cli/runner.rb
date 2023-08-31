@@ -60,7 +60,7 @@ module Minfra
         new(cmd, **args).run
       end
 
-      attr_reader :exit_on_error
+      attr_reader :exit_on_error, :runner, :cmd
 
       def initialize(cmd, exit_on_error: true, runner: :popen)
         @cmd = cmd
@@ -69,7 +69,7 @@ module Minfra
       end
 
       def run
-        debug("running (#{@system}): #{@cmd}")
+        debug("running (#{@runner}): #{@cmd}")
         res=case @runner
           when :system
             run_system(Result.new)

@@ -47,8 +47,8 @@ module Orchparty
 
       def print_install(helm)
         @out_io.puts "---"
-        @out_io.puts install_cmd(helm, value_path(helm))
-        @out_io.puts upgrade_cmd(helm, value_path(helm))
+        @out_io.puts install_cmd(helm, value_path(helm)).cmd
+        @out_io.puts upgrade_cmd(helm, value_path(helm)).cmd
         @out_io.puts "---"
         @out_io.puts File.read(template(value_path(helm), helm, flag: "")) if value_path(helm)
       end
@@ -60,11 +60,11 @@ module Orchparty
       end
 
       def upgrade(helm)
-        @out_io.puts system(upgrade_cmd(helm))
+        @out_io.puts upgrade_cmd(helm).run.stdout
       end
 
       def install(helm)
-        @out_io.puts system(install_cmd(helm))
+        @out_io.puts install_cmd(helm).run.stdout
       end
     end
 
@@ -74,11 +74,11 @@ module Orchparty
       end
 
       def upgrade_cmd(helm, fix_file_path = nil)
-        "helm upgrade --namespace #{namespace} --kube-context #{cluster_name} --version #{helm.version} #{helm.name} #{helm.chart} #{template(value_path(helm), helm, fix_file_path: fix_file_path)}"
+        Minfra::Cli::HelmRunner.new("upgrade --namespace #{namespace} --kube-context #{cluster_name} --version #{helm.version} #{helm.name} #{helm.chart} #{template(value_path(helm), helm, fix_file_path: fix_file_path)}")
       end
 
       def install_cmd(helm, fix_file_path = nil)
-        "helm install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} --version #{helm.version} #{helm.name} #{helm.chart} #{template(value_path(helm), helm, fix_file_path: fix_file_path)}"
+        Minfra::Cli::HelmRunner.new("install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} --version #{helm.version} #{helm.name} #{helm.chart} #{template(value_path(helm), helm, fix_file_path: fix_file_path)}")
       end
     end
 
@@ -163,9 +163,10 @@ module Orchparty
       def print_install(chart)
         
         build_chart(chart) do |chart_path|
-          cmd="helm template --namespace #{namespace} --debug --kube-context #{cluster_name} --output-dir #{chart_path.join('..','helm_expanded')}   #{chart.name} #{chart_path}"
-          @out_io.puts `$cmd`
-          if system("#{cmd} > /dev/null")
+           cmd="helm template --namespace #{namespace} --debug --kube-context #{cluster_name} --output-dir #{chart_path.join('..','helm_expanded')}   #{chart.name} #{chart_path}"
+           @out_io.puts `$cmd`
+           if system("#{cmd} > /dev/null")
+
             info("helm template check: OK")
           else
             error("helm template check: FAIL")
@@ -181,21 +182,21 @@ module Orchparty
       def install(chart)
         info("Install: #{chart.name}")
         build_chart(chart) do |chart_path|
-          @out_io.puts system("helm install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}")
+          res=Minfra::Cli::HelmRunner.new("install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}").run
+          @out_io.puts res.stdout
         end
       end
 
       def upgrade(chart)
         info("Upgrade: #{chart}")
         build_chart(chart) do |chart_path|
-          @out_io.puts system("helm upgrade --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}")
+          res=Minfra::Cli::HelmRunner.new("upgrade --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}").run
+          @out_io.puts res.stdout
         end
       end
       private
       
       def build_chart(chart)
-        
-        
         dir = @app.status_dir.join('helm') # duplication
         
         params = chart._services.map {|s| app_config.services[s.to_sym] }.map{|s| [s.name, s]}.to_h
