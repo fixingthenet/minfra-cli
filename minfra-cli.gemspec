@@ -31,9 +31,10 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "table_print", "1.5.6"
   spec.add_runtime_dependency "rest-client", "~>2.0"
   spec.add_runtime_dependency "hashie", "~>3.5"
-  spec.add_runtime_dependency "activesupport", "~> 6.1"
+  spec.add_runtime_dependency "activesupport", ">= 6.1"
   spec.add_runtime_dependency "erubis", "~> 2.7"
   spec.add_runtime_dependency "hiera", "3.9.0"
   spec.add_runtime_dependency "hiera-eyaml", "3.3.0"
   spec.add_runtime_dependency "hiera-eyaml-gpg", "0.7.4"
 end
+

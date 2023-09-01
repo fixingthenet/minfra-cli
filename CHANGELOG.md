@@ -1,3 +1,10 @@
+# 1.12.0
+ * refactoring Runner
+ * adding runner type system (popen is default)
+ * adding HelmRunner, KubectlRunner
+ * adding support for infra::allow_insecure_k8s_connections
+ * easing active support requirement
+
 # 1.11.0
  * generating helm output with resolved vairables in "helm_expanded"
  * adding template_dir to templater to render whole directories
