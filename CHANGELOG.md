@@ -1,3 +1,6 @@
+# 1.12.1
+ * replaced all relevant system calls with new runners (fixed apply and
+   generic_secrets)
 # 1.12.0
  * refactoring Runner
  * adding runner type system (popen is default)
