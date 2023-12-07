@@ -7,7 +7,7 @@ Is a KIND (k8s in docker) based development environment.
 
 ## Expected hiera data
 
- * l("cluster").id: the k8s name of the cluster
+ * l("cluster.id"): the k8s name of the cluster
  
 
 

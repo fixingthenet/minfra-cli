@@ -30,7 +30,7 @@ module Orchparty
 
       def template(file_path, helm, flag: "-f ", fix_file_path: nil)
         return "" unless file_path
-        puts "Rendering: #{file_path}"
+        debug "Rendering: #{file_path}"
         file_path = File.join(self.dir_path, file_path)
         if(file_path.end_with?(".erb"))
           helm.application = OpenStruct.new(cluster_name: cluster_name, namespace: namespace)
@@ -167,9 +167,9 @@ module Orchparty
            @out_io.puts `$cmd`
            if system("#{cmd} > /dev/null")
 
-            info("helm template check: OK")
+            debug("Helm: template check: OK")
           else
-            error("helm template check: FAIL")
+            error("Helm: template check: FAIL")
           end  
         end
         
@@ -180,7 +180,7 @@ module Orchparty
       end
 
       def install(chart)
-        info("Install: #{chart.name}")
+        debug("Install: #{chart.name}")
         build_chart(chart) do |chart_path|
           res=Minfra::Cli::HelmRunner.new("install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}").run
           @out_io.puts res.stdout
@@ -188,7 +188,7 @@ module Orchparty
       end
 
       def upgrade(chart)
-        info("Upgrade: #{chart}")
+        debug("Upgrade: #{chart}")
         build_chart(chart) do |chart_path|
           res=Minfra::Cli::HelmRunner.new("upgrade --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}").run
           @out_io.puts res.stdout
@@ -240,7 +240,7 @@ module Orchparty
         params._used_vars = {} #here we'll collect all used vars
 
         Dir[File.join(templates_path, kind, '*.erb')].each do |template_path|
-          info("Rendering Template: #{template_path}")
+          debug("Rendering Template: #{template_path}")
           template_name = File.basename(template_path, '.erb')
           output_path = File.join(output_chart_path, 'templates', "#{app_name}-#{template_name}")
           
@@ -309,7 +309,7 @@ class KubernetesApplication
           chart_name: namespace,
     )
 
-    info("generating base helm structure from: #{output_chart_path} from #{templates_path}")
+    debug("Minfra: generating base helm structure from: #{output_chart_path} from #{templates_path}")
     system("mkdir -p #{File.join(output_chart_path, 'templates')}")
 
     system("cp #{File.join(templates_path, 'values.yaml')} #{File.join(output_chart_path, 'values.yaml')}")
@@ -344,7 +344,7 @@ class KubernetesApplication
     services = combine_charts(app_config)
     services.each do |name|
       service = app_config[:services][name]
-      info "Service: #{name}(#{service._type}) #{method}"
+      debug("Generating Service: #{name}(#{service._type}) #{method}")
       deployable_class="::Orchparty::Services::#{service._type.classify}".constantize
       deployable=deployable_class.new(cluster_name: cluster_name, 
                      namespace: namespace, 
