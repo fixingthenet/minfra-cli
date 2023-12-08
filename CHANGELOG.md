@@ -1,6 +1,9 @@
 # 1.13.0
  * secrets can be rendered with apply (currently hardcoded)
  * moved most output to debug level 
+# 1.12.1
+ * replaced all relevant system calls with new runners (fixed apply and
+   generic_secrets)
 # 1.12.0
  * refactoring Runner
  * adding runner type system (popen is default)
