@@ -17,8 +17,10 @@ module Orchparty
       attr_accessor :dir_path
       attr_accessor :app_config
       attr_accessor :options
-
-      def initialize(cluster_name: , namespace:, file_path: , app_config:, out_io: STDOUT, app: )
+      
+      attr_accessor :service
+      
+      def initialize(cluster_name: , namespace:, file_path: , app_config:, out_io: STDOUT, app:, service: )
         self.cluster_name = cluster_name
         self.namespace = namespace
         self.dir_path = file_path
@@ -31,7 +33,7 @@ module Orchparty
       def template(file_path, helm, flag: "-f ", fix_file_path: nil)
         return "" unless file_path
         debug "Rendering: #{file_path}"
-        file_path = File.join(self.dir_path, file_path)
+        file_path = File.join(self.dir_path, file_path) unless file_path.start_with?('/')
         if(file_path.end_with?(".erb"))
           helm.application = OpenStruct.new(cluster_name: cluster_name, namespace: namespace)
           template = Erubis::Eruby.new(File.read(file_path))
@@ -45,108 +47,119 @@ module Orchparty
         "#{flag}#{fix_file_path || file_path}"
       end
 
-      def print_install(helm)
+      def print_install
         @out_io.puts "---"
-        @out_io.puts install_cmd(helm, value_path(helm)).cmd
-        @out_io.puts upgrade_cmd(helm, value_path(helm)).cmd
+        @out_io.puts install_cmd(value_path).cmd
+        @out_io.puts upgrade_cmd(value_path).cmd
         @out_io.puts "---"
-        @out_io.puts File.read(template(value_path(helm), helm, flag: "")) if value_path(helm)
+        @out_io.puts File.read(template(value_path, service, flag: "")) if value_path
+        cleanup
       end
 
       # On 05.02.2021 we have decided that it would be best to print both commands.
       # This way it would be possible to debug both upgrade and install and also people would not see git diffs all the time.
-      def print_upgrade(helm)
-        print_install(helm)
+      def print_upgrade
+        print_install
       end
 
-      def upgrade(helm)
-        @out_io.puts upgrade_cmd(helm).run.stdout
+      def upgrade
+        @out_io.puts upgrade_cmd.run.stdout
+        cleanup if respond_to?(:cleanup)
       end
 
-      def install(helm)
-        @out_io.puts install_cmd(helm).run.stdout
+      def install
+        @out_io.puts install_cmd.run.stdout
+        cleanup if respond_to?(:cleanup)
       end
     end
 
     class Helm < Context
-      def value_path(helm)
-        helm[:values]
+      def value_path
+        service[:values]
       end
 
-      def upgrade_cmd(helm, fix_file_path = nil)
-        Minfra::Cli::HelmRunner.new("upgrade --namespace #{namespace} --kube-context #{cluster_name} --version #{helm.version} #{helm.name} #{helm.chart} #{template(value_path(helm), helm, fix_file_path: fix_file_path)}")
+      def upgrade_cmd(fix_file_path = nil)
+        Minfra::Cli::HelmRunner.new("upgrade --namespace #{namespace} --kube-context #{cluster_name} --version #{service.version} #{service.name} #{service.chart} #{template(value_path, service, fix_file_path: fix_file_path)}")
       end
 
-      def install_cmd(helm, fix_file_path = nil)
-        Minfra::Cli::HelmRunner.new("install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} --version #{helm.version} #{helm.name} #{helm.chart} #{template(value_path(helm), helm, fix_file_path: fix_file_path)}")
+      def install_cmd(fix_file_path = nil)
+        Minfra::Cli::HelmRunner.new("install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} --version #{service.version} #{service.name} #{service.chart} #{template(value_path, service, fix_file_path: fix_file_path)}")
       end
     end
 
     class Apply < Context
-      def value_path(apply)
-        apply[:name]
+      def value_path
+        if service[:tmp_file]
+          service[:tmp_file]
+        else
+          service[:name]
+        end
       end
 
-      def upgrade_cmd(apply, fix_file_path = nil)
-        "kubectl apply --namespace #{namespace} --context #{cluster_name} #{template(value_path(apply), apply, fix_file_path: fix_file_path)}"
+      def upgrade_cmd(fix_file_path = nil)
+        Minfra::Cli::KubeCtlRunner.new("apply --namespace #{namespace} --context #{cluster_name} #{template(value_path, service, fix_file_path: fix_file_path)}")
       end
 
-      def install_cmd(apply, fix_file_path = nil)
-        "kubectl apply --namespace #{namespace} --context #{cluster_name} #{template(value_path(apply), apply, fix_file_path: fix_file_path)}"
+      def install_cmd(fix_file_path = nil)
+        Minfra::Cli::KubeCtlRunner.new("apply --namespace #{namespace} --context #{cluster_name} #{template(value_path, service, fix_file_path: fix_file_path)}")
+      end
+
+      def cleanup
+        File.unlink(service[:tmp_file]) if service[:tmp_file]
       end
     end
 
     class SecretGeneric < Context
-      def value_path(secret)
-        secret[:from_file]
+      def value_path
+        service[:from_file]
       end
 
-      def upgrade_cmd(secret, fix_file_path=nil)
-        "kubectl --namespace #{namespace} --context #{cluster_name} create secret generic --dry-run -o yaml #{secret[:name]}  #{template(value_path(secret), secret, flag: "--from-file=", fix_file_path: fix_file_path)} | kubectl --context #{cluster_name} apply -f -"
+      def upgrade_cmd(fix_file_path=nil)
+        "kubectl --namespace #{namespace} --context #{cluster_name} create secret generic --dry-run -o yaml #{service[:name]}  #{template(value_path, service, flag: "--from-file=", fix_file_path: fix_file_path)} | kubectl --context #{cluster_name} apply -f -"
       end
 
-      def install_cmd(secret, fix_file_path=nil)
-        "kubectl --namespace #{namespace} --context #{cluster_name} create secret generic --dry-run -o yaml #{secret[:name]}  #{template(value_path(secret), secret, flag: "--from-file=", fix_file_path: fix_file_path)} | kubectl --context #{cluster_name} apply -f -"
+      def install_cmd(fix_file_path=nil)
+        "kubectl --namespace #{namespace} --context #{cluster_name} create secret generic --dry-run -o yaml #{service[:name]}  #{template(value_path, service, flag: "--from-file=", fix_file_path: fix_file_path)} | kubectl --context #{cluster_name} apply -f -"
       end
     end
 
     class Label < Context
-      def print_install(label)
+      def print_install
         @out_io.puts "---"
-        @out_io.puts install_cmd(label)
+        @out_io.puts install_cmd
       end
 
-      def print_upgrade(label)
+      def print_upgrade
         @out_io.puts "---"
-        @out_io.puts upgrade_cmd(label)
+        @out_io.puts upgrade_cmd
       end
 
-      def upgrade_cmd(label)
-        "kubectl --namespace #{namespace} --context #{cluster_name} label --overwrite #{label[:resource]} #{label[:name]} #{label["value"]}"
+      def upgrade_cmd
+        "kubectl --namespace #{namespace} --context #{cluster_name} label --overwrite #{service[:resource]} #{service[:name]} #{service["value"]}"
       end
 
-      def install_cmd(label)
-        "kubectl --namespace #{namespace} --context #{cluster_name} label --overwrite #{label[:resource]} #{label[:name]} #{label["value"]}"
+      def install_cmd
+        "kubectl --namespace #{namespace} --context #{cluster_name} label --overwrite #{service[:resource]} #{service[:name]} #{service["value"]}"
       end
     end
 
     class Wait < Context
-      def print_install(wait)
+      def print_install
         @out_io.puts "---"
-        @out_io.puts wait.cmd
+        @out_io.puts service.cmd
       end
 
-      def print_upgrade(wait)
+      def print_upgrade
         @out_io.puts "---"
-        @out_io.puts wait.cmd
+        @out_io.puts service.cmd
       end
 
-      def upgrade(wait)
-        eval(wait.cmd)
+      def upgrade
+        eval(service.cmd)
       end
 
-      def install(wait)
-        eval(wait.cmd)
+      def install
+        eval(service.cmd)
       end
     end
 
@@ -160,37 +173,37 @@ module Orchparty
       end
 
 
-      def print_install(chart)
+      def print_install
         
-        build_chart(chart) do |chart_path|
-           cmd="helm template --namespace #{namespace} --debug --kube-context #{cluster_name} --output-dir #{chart_path.join('..','helm_expanded')}   #{chart.name} #{chart_path}"
+        build_chart(service) do |chart_path|
+           cmd="helm template --namespace #{namespace} --debug --kube-context #{cluster_name} --output-dir #{chart_path.join('..','helm_expanded')}   #{service.name} #{chart_path}"
            @out_io.puts `$cmd`
            if system("#{cmd} > /dev/null")
 
             debug("Helm: template check: OK")
           else
             error("Helm: template check: FAIL")
-          end  
+          end
         end
         
       end
 
-      def print_upgrade(chart)
-        print_install(chart)
+      def print_upgrade
+        print_install
       end
 
-      def install(chart)
-        debug("Install: #{chart.name}")
-        build_chart(chart) do |chart_path|
-          res=Minfra::Cli::HelmRunner.new("install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}").run
+      def install
+        debug("Install: #{service.name}")
+        build_chart(service) do |chart_path|
+          res=Minfra::Cli::HelmRunner.new("install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} #{service.name} #{chart_path}").run
           @out_io.puts res.stdout
         end
       end
 
-      def upgrade(chart)
-        debug("Upgrade: #{chart}")
-        build_chart(chart) do |chart_path|
-          res=Minfra::Cli::HelmRunner.new("upgrade --namespace #{namespace} --kube-context #{cluster_name} #{chart.name} #{chart_path}").run
+      def upgrade
+        debug("Upgrade: #{service.name}: #{service._services.join(', ')}")
+        build_chart(service) do |chart_path|
+          res=Minfra::Cli::HelmRunner.new("upgrade --namespace #{namespace} --kube-context #{cluster_name} #{service.name} #{chart_path}").run
           @out_io.puts res.stdout
         end
       end
@@ -334,6 +347,8 @@ class KubernetesApplication
         current_service._services.each do |n|
           services.delete n.to_s
         end
+#      else
+#        puts "unkown service: #{name}: #{current_service._type}"  
       end
     end
     services
@@ -342,6 +357,7 @@ class KubernetesApplication
   def each_service(method)
     prepare
     services = combine_charts(app_config)
+    
     services.each do |name|
       service = app_config[:services][name]
       debug("Generating Service: #{name}(#{service._type}) #{method}")
@@ -351,9 +367,10 @@ class KubernetesApplication
                      file_path: file_path, 
                      app_config: app_config, 
                      out_io: @out_io, 
-                     app: self)
-                     
-      deployable.send(method, service)
+                     app: self,
+                     service: service
+                     )
+      deployable.send(method)
     end
   end
 end

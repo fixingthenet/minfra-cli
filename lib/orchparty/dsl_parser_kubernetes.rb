@@ -378,12 +378,37 @@ module Orchparty
         self
       end
 
-      def secrets(name, &block)
+      # secrets can be aprt of the helm chart or we write them to
+      # a file and later apply it
+      # apiVersion: v1
+      # kind: Secret
+      # metadata:
+      #  name: dotfile-secret
+      # data:
+      #  key: base64_encoded_value
+
+      def secrets(name, type: :helm, &block)
+        case type
+        when :helm
         result =  ServiceBuilder.build(name, "chart-secret", block)
         @application.services[name] = result
         @application._service_order << name
         @node._services << name
         self
+        when :apply
+          result = ServiceBuilder.build(name, "apply", block)
+          file = Tempfile.create(name)
+          result.tmp_file=file.path
+          file.puts "apiVersion: v1\nkind: Secret\nmetadata:\n  name: #{name}\ntype: Opaque\ndata:"
+          result._.each do |key, value|
+            file.puts "  #{key}: #{Base64.strict_encode64(value.respond_to?(:call) ? value.call : value)}"
+          end
+          file.close
+          @application.services[name] = result
+          @application._service_order << name
+        else
+          raise "unknown secret type: #{type}, known tpyes: [helm, apply]"
+        end
       end
       
     end
