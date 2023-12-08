@@ -27,6 +27,7 @@ module Orchparty
         self.app_config = app_config
         @app = app
         @out_io = out_io
+        self.service = service # ugly naming, should be 'context'?
         self.options=options
       end
 
@@ -174,8 +175,7 @@ module Orchparty
 
 
       def print_install
-        
-        build_chart(service) do |chart_path|
+        build_chart do |chart_path|
            cmd="helm template --namespace #{namespace} --debug --kube-context #{cluster_name} --output-dir #{chart_path.join('..','helm_expanded')}   #{service.name} #{chart_path}"
            @out_io.puts `$cmd`
            if system("#{cmd} > /dev/null")
@@ -194,7 +194,7 @@ module Orchparty
 
       def install
         debug("Install: #{service.name}")
-        build_chart(service) do |chart_path|
+        build_chart do |chart_path|
           res=Minfra::Cli::HelmRunner.new("install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} #{service.name} #{chart_path}").run
           @out_io.puts res.stdout
         end
@@ -202,18 +202,17 @@ module Orchparty
 
       def upgrade
         debug("Upgrade: #{service.name}: #{service._services.join(', ')}")
-        build_chart(service) do |chart_path|
+        build_chart do |chart_path|
           res=Minfra::Cli::HelmRunner.new("upgrade --namespace #{namespace} --kube-context #{cluster_name} #{service.name} #{chart_path}").run
           @out_io.puts res.stdout
         end
       end
       private
       
-      def build_chart(chart)
+      def build_chart
         dir = @app.status_dir.join('helm') # duplication
-        
-        params = chart._services.map {|s| app_config.services[s.to_sym] }.map{|s| [s.name, s]}.to_h
-        run(templates_path: File.expand_path(chart.template, self.dir_path), params: params, output_chart_path: dir, chart: chart)
+        params = service._services.map {|s| app_config.services[s.to_sym] }.map{|s| [s.name, s]}.to_h
+        run(templates_path: File.expand_path(service.template, self.dir_path), params: params, output_chart_path: dir, chart: service)
         yield dir
       end
 
