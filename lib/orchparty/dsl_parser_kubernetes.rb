@@ -387,8 +387,8 @@ module Orchparty
       # data:
       #  key: base64_encoded_value
 
-      def secrets(name, type: :helm, &block)
-        case type
+      def secrets(name, deploy: :helm, &block)
+        case deploy
         when :helm
         result =  ServiceBuilder.build(name, "chart-secret", block)
         @application.services[name] = result
@@ -406,6 +406,8 @@ module Orchparty
           file.close
           @application.services[name] = result
           @application._service_order << name
+        when :none
+          
         else
           raise "unknown secret type: #{type}, known tpyes: [helm, apply]"
         end
