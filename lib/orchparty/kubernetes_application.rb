@@ -52,7 +52,7 @@ module Orchparty
         @out_io.puts upgrade_cmd(value_path).cmd
         @out_io.puts '---'
         @out_io.puts File.read(template(value_path, service, flag: '')) if value_path
-        cleanup
+        cleanup if respond_to?(:cleanup)
       end
 
       # On 05.02.2021 we have decided that it would be best to print both commands.

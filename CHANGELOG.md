@@ -1,3 +1,5 @@
+# 1.13.1
+ * BUG: not every deployer contexts have cleanups
 # 1.13.0
  * secrets can be rendered with apply (currently hardcoded)
  * moved most output to debug level 
