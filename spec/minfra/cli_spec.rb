@@ -10,7 +10,7 @@ describe Minfra::Cli do
   end
 
   describe 'CliStarter' do
-    let(:main) { Minfra::Cli.init(['one', 'two', 'three', '-e', 'test', '--argv_file', 'hallo.txt']) }
+    let!(:main) { Minfra::Cli.init(['one', 'two', 'three', '-e', 'test', '--argv_file', 'hallo.txt']) }
 
     it 'extracts global_options' do
       expect(main.options).to eq({ env: 'test', argv_file: 'hallo.txt' })

@@ -35,7 +35,11 @@ module Minfra
     cattr_accessor :logger, :config, :subcommands
     cattr_reader :cli
     
-    def self.init(argv)
+    def self.init?
+      !!@cli
+    end
+      
+    def self.init(argv=[])
       self.subcommands ||= {}
       @cli = CliStarter.new(argv)
     end
@@ -65,6 +69,7 @@ module Minfra
         @options = {}
         @minfrarc_loaded = false
         @minfrarc_me_loaded = false
+        @base_path = Pathname.new(ENV['MINFRA_PATH']).expand_path
 
         parse_global_options
 
@@ -140,20 +145,20 @@ module Minfra
       end
 
       def init_config
-        @config = Config.load(@options['-e'] || 'dev')
+        @config = Config.new(@base_path,@options['-e'] || 'dev')
         Minfra::Cli.config = @config
       end
 
 
       def hiera_init
-        @hiera_root = Pathname.new("#{ENV['MINFRA_PATH']}/hiera")
+        @hiera_root = @base_path.join('hiera')
         hiera = Hiera.new(config: @hiera_root.join('hiera.yaml').to_s)
         Hiera.logger = :noop
         env = @config.orch_env
         hiera_main_path = @hiera_root.join("hieradata/#{config.project.minfra.hiera.env_path}/#{env}.eyaml")
-        raise("unknown environment #{env}, I expact a file at #{hiera_main_path}") unless hiera_main_path.exist?
+        raise("unknown environment #{env}, I expect a file at #{hiera_main_path}") unless hiera_main_path.exist?
 
-        scope = { 'minfra_path' => ENV['MINFRA_PATH'], 'hieraroot' => @hiera_root.to_s, 'env' => env }
+        scope = { 'minfra_path' => @base_path, 'hieraroot' => @hiera_root.to_s, 'env' => env }
         special_lookups = hiera.lookup('lookup_options', {}, scope, nil, :priority)
 
         node_scope = hiera.lookup('env', {}, scope, nil, :deeper)

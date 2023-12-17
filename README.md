@@ -5,6 +5,12 @@ Is a KIND (k8s in docker) based development environment.
 
 ## Setup
 
+environment variables, alternative config keys:
+
+* MINFRA_PATH
+* MINFRA_LOGGING_LEVEL | minfra.logging_level
+
+
 ## Expected hiera data
 
  * l("cluster.id"): the k8s name of the cluster
