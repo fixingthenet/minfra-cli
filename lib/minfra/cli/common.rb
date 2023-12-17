@@ -1,11 +1,12 @@
+# frozen_string_literal: true
+
 require 'pathname'
 
 module Minfra
   module Cli
     module Common
-
       def exit_error(msg)
-        STDERR.puts("ERROR: #{msg}" )
+        warn("ERROR: #{msg}")
         exit 1
       end
 
@@ -15,12 +16,12 @@ module Minfra
         when :exec
           Kernel.exec(cmd)
         when :bash
-          res = system(%{bash -c "#{Array.new(cmd).join(' && ')}"})
-          exit_error("failed!") unless res
+          res = system(%(bash -c "#{Array.new(cmd).join(' && ')}"))
+          exit_error('failed!') unless res
           nil # no output!
         when :system
           res = system(cmd)
-          exit_error("failed!") unless res
+          exit_error('failed!') unless res
           nil # no output!
         else
           `#{cmd}` # with output!
@@ -35,7 +36,6 @@ module Minfra
         error "command was: #{cmd}"
         exit 1
       end
-
     end
   end
 end

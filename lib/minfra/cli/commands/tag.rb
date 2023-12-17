@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Minfra
   module Cli
     class Tag
@@ -22,10 +23,10 @@ module Minfra
         info 'Checking that the current commit is present on the remote.'
         output = run_cmd(cmd_ensure_commit_is_pushed)
 
-        if output.empty?
-          exit_error "The current commit is not present on the remote.\n" \
-                     'Please push your changes to origin and try again.'
-        end
+        return unless output.empty?
+
+        exit_error "The current commit is not present on the remote.\n" \
+                   'Please push your changes to origin and try again.'
       end
 
       def cmd_ensure_commit_is_pushed
@@ -45,7 +46,7 @@ module Minfra
       end
 
       def cmd_push
-        "git push"
+        'git push'
       end
 
       def cmd_push_tag
@@ -55,8 +56,8 @@ module Minfra
       def git_current_branch
         `git rev-parse --abbrev-ref HEAD`.strip
       end
-      
-      #TBD: this should be more flexible
+
+      # TBD: this should be more flexible
       def tag_name
         "#{git_current_branch}-REL-#{@now.strftime(@format)}"
       end
@@ -68,4 +69,4 @@ module Minfra
   end
 end
 
-#Minfra::Cli.register("tag", "creating tags", Minfra::Cli::Tag)
+# Minfra::Cli.register("tag", "creating tags", Minfra::Cli::Tag)

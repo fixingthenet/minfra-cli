@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Minfra
   module Cli
     module Logging
@@ -25,7 +27,9 @@ module Minfra
       def deprecated(comment)
         logger.warn "DEPRECATED: #{comment}"
       end
+
       private
+
       def logger
         Minfra::Cli.logger
       end

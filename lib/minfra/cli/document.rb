@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Minfra
   module Cli
     class Document
@@ -9,9 +11,10 @@ module Minfra
         @config = config
       end
 
-      def document(message)
+      def document(_message)
         return true if @config.dev?
-        puts "TBD: calling documentation hooks"
+
+        puts 'TBD: calling documentation hooks'
         true
       end
     end

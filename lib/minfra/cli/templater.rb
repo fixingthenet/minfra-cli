@@ -1,22 +1,24 @@
+# frozen_string_literal: true
+
 require 'erb'
 
 module Minfra
   module Cli
-    class Templater # not threadsafe!
+    # not threadsafe!
+    class Templater
       def self.read(path, params: {}, fallback: nil)
-        p=Pathname.new(path)
+        p = Pathname.new(path)
         if p.exist?
-          content=File.read(path)
+          content = File.read(path)
         else
-          if fallback
-            content=fallback
-          else
-            raise "file #{path} not found"
-          end
-        end  
+          raise "file #{path} not found" unless fallback
+
+          content = fallback
+
+        end
         render(content, params)
       end
-      
+
       def self.render(template, params)
         new(template).render(params)
       end
@@ -25,7 +27,7 @@ module Minfra
         destination = Pathname.new(dst)
         destination.mkpath
         source = Pathname.new(src)
-        
+
         source.glob('**/*') do |filename|
           rel_path = filename.relative_path_from(source)
 
@@ -40,11 +42,11 @@ module Minfra
           end
         end
       end
-      
+
       def initialize(template)
         @erb = ERB.new(template)
-        @check_mode=false
-        @check_missing=[]
+        @check_mode = false
+        @check_missing = []
       end
 
       def missing?
@@ -70,9 +72,7 @@ module Minfra
 
       def method_missing(name)
         if @check_mode
-          if @check_block
-            @check_block.call(name)
-          end
+          @check_block&.call(name)
           @check_missing << name
         else
           super

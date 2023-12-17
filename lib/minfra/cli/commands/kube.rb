@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'yaml'
 module Minfra
   module Cli
@@ -9,27 +11,27 @@ module Minfra
 
       def initialize(options, config)
         @options = options
-        @config=config
-        @env_config=config.orch_env_config
+        @config = config
+        @env_config = config.orch_env_config
       end
 
-      def dashboard(stack_name,env,deployment,cluster)
-        stack = init(stack_name,env,deployment,cluster)
-        insecure_flag = l("infra::allow_insecure_k8s_connections") ? "--insecure-skip-tls-verify" : ""
+      def dashboard(stack_name, env, deployment, cluster)
+        stack = init(stack_name, env, deployment, cluster)
+        insecure_flag = l('infra::allow_insecure_k8s_connections') ? '--insecure-skip-tls-verify' : ''
         cmd = "k9s #{insecure_flag} --kubeconfig #{kube_config_path} --context #{stack.cluster_name} --namespace #{stack_name} --command pod"
         debug(cmd)
         exec(cmd)
       end
 
       def restart
-        run %{docker start #{kind_name}-control-plane}
-        run %{docker exec  #{kind_name}-control-plane bash -c "sed -e '/nameserver 127.0.0.11/ s/^#*/#/'  /etc/resolv.conf | cat - >> /etc/resolv.conf"}
-        run %{docker exec  #{kind_name}-control-plane bash -c "echo nameserver 8.8.8.8 >> /etc/resolv.conf"}
-        run %{docker exec  #{kind_name}-control-plane bash -c "echo nameserver 8.8.4.4 >> /etc/resolv.conf"}
+        run %(docker start #{kind_name}-control-plane)
+        run %(docker exec  #{kind_name}-control-plane bash -c "sed -e '/nameserver 127.0.0.11/ s/^#*/#/'  /etc/resolv.conf | cat - >> /etc/resolv.conf")
+        run %(docker exec  #{kind_name}-control-plane bash -c "echo nameserver 8.8.8.8 >> /etc/resolv.conf")
+        run %(docker exec  #{kind_name}-control-plane bash -c "echo nameserver 8.8.4.4 >> /etc/resolv.conf")
       end
 
       def create
-        STDOUT.sync
+        $stdout.sync
 
         network_mask = @config.project.kind.network.mask
         gateway_ip = @config.project.kind.network.gateway
@@ -37,82 +39,97 @@ module Minfra
 
         info "step: creating network #{kind_name} #{network_mask} gw #{gateway_ip}"
         # run(%{docker network inspect kind | grep "Subnet"}, exit_on_error: false).success?
-        run(%{docker network rm #{kind_name}}, exit_on_error: false)
+        run(%(docker network rm #{kind_name}), exit_on_error: false)
 
-        run(%{docker network create --gateway #{gateway_ip} --subnet=#{network_mask} #{kind_name}}, exit_on_error: true)
+        run(%(docker network create --gateway #{gateway_ip} --subnet=#{network_mask} #{kind_name}), exit_on_error: true)
 
         info "step: creating '#{kind_name}' kind cluster (can take some minutes)"
-        kind_kube_path=Runner.run('echo $KUBECONFIG').to_s.strip
-        kind_config=Templater.read(config.base_path.join('config','kind.yaml.erb'), params: {config: config})
+        kind_kube_path = Runner.run('echo $KUBECONFIG').to_s.strip
+        kind_config = Templater.read(config.base_path.join('config', 'kind.yaml.erb'), params: { config: config })
         File.write(config.kind_config_path, kind_config)
-                                 
-        run(%{KIND_EXPERIMENTAL_DOCKER_NETWORK=#{kind_name} kind create cluster --name "#{kind_name}" --config #{@config.kind_config_path}})
 
-        info "step: configuring kind"
-        run %{docker exec #{kind_name}-control-plane bash -c "sed -e '/nameserver 127.0.0.11/ s/^#*/#/'  /etc/resolv.conf | cat - >> /etc/resolv.conf"}
-        run %{docker exec #{kind_name}-control-plane bash -c "echo nameserver 8.8.8.8 >> /etc/resolv.conf"}
-        run %{docker exec #{kind_name}-control-plane bash -c "echo nameserver 8.8.4.4 >> /etc/resolv.conf"}
+        run(%(KIND_EXPERIMENTAL_DOCKER_NETWORK=#{kind_name} kind create cluster --name "#{kind_name}" --config #{@config.kind_config_path}))
 
-        configs = [YAML.load(File.read(kind_kube_path))]
+        info 'step: configuring kind'
+        run %(docker exec #{kind_name}-control-plane bash -c "sed -e '/nameserver 127.0.0.11/ s/^#*/#/'  /etc/resolv.conf | cat - >> /etc/resolv.conf")
+        run %(docker exec #{kind_name}-control-plane bash -c "echo nameserver 8.8.8.8 >> /etc/resolv.conf")
+        run %(docker exec #{kind_name}-control-plane bash -c "echo nameserver 8.8.4.4 >> /etc/resolv.conf")
 
-        existing_config = YAML.load(File.read(kube_config_path))
+        configs = [YAML.safe_load(File.read(kind_kube_path))]
 
-        existing_config["clusters"] = existing_config["clusters"].reject { |c| configs.map { |k| k["clusters"] }.flatten.map { |n| n["name"] }.include?(c["name"]) }.concat(configs.map { |k| k["clusters"] }.flatten)
-        existing_config["users"] = existing_config["users"].reject { |c| configs.map { |k| k["users"] }.flatten.map { |n| n["name"] }.include?(c["name"]) }.concat(configs.map{ |k| k["users"] }.flatten).uniq { |k| k["name"] }
-        existing_config["contexts"] = existing_config["contexts"].reject { |c| configs.map { |k| k["contexts"] }.flatten.map{ |n| n["name"] }.include?(c["name"]) }.concat(configs.map { |k| k["contexts"] }.flatten)
+        existing_config = YAML.safe_load(File.read(kube_config_path))
+
+        existing_config['clusters'] = existing_config['clusters'].reject do |c|
+          configs.map do |k|
+            k['clusters']
+          end.flatten.map { |n| n['name'] }.include?(c['name'])
+        end.concat(configs.map do |k|
+                     k['clusters']
+                   end.flatten)
+        existing_config['users'] = existing_config['users'].reject do |c|
+                                     configs.map do |k|
+                                       k['users']
+                                     end.flatten.map { |n| n['name'] }.include?(c['name'])
+                                   end.concat(configs.map do |k|
+                                                k['users']
+                                              end.flatten).uniq { |k| k['name'] }
+        existing_config['contexts'] = existing_config['contexts'].reject do |c|
+          configs.map do |k|
+            k['contexts']
+          end.flatten.map { |n| n['name'] }.include?(c['name'])
+        end.concat(configs.map do |k|
+                     k['contexts']
+                   end.flatten)
         File.write(@config.kube_config_path, YAML.dump(existing_config))
 
-        info "step: starting kind"
-        run_kubectl %{ config use-context kind-#{kind_name} }
+        info 'step: starting kind'
+        run_kubectl %( config use-context kind-#{kind_name} )
 
-        run_kubectl %{create clusterrolebinding default-admin --serviceaccount=kube-system:default --clusterrole=cluster-admin}
+        run_kubectl %(create clusterrolebinding default-admin --serviceaccount=kube-system:default --clusterrole=cluster-admin)
 
-#        info "step: attaching newly created kind cluster to its own docker network"
-#        info run(%{docker network connect #{kind_name} #{kind_name}-control-plane --ip #{panel_ip}})
+        #        info "step: attaching newly created kind cluster to its own docker network"
+        #        info run(%{docker network connect #{kind_name} #{kind_name}-control-plane --ip #{panel_ip}})
       end
 
       def push(image)
-        run %{kind load docker-image --name #{kind_name} #{image}}
+        run %(kind load docker-image --name #{kind_name} #{image})
       end
 
       def destroy_dev_cluster
         run %(kind delete cluster --name #{kind_name})
         run(%(docker rm -f #{kind_name}-control-plane), exit_on_error: false)
-        run(%(docker network rm #{kind_name}), exit_on_error: false) 
+        run(%(docker network rm #{kind_name}), exit_on_error: false)
       end
 
       def deploy(stack_name, reason_message)
-        #TBD: options is global, avoid it!
-        
-        test=options[:test]
+        # TBD: options is global, avoid it!
+
+        test = options[:test]
         stack = init(stack_name,
                      options[:environment],
                      options[:deployment],
                      options[:cluster])
         cluster = stack.cluster_name
 
-        method = options["install"] ? "install" : "upgrade"
+        method = options['install'] ? 'install' : 'upgrade'
 
         stack.release_path.mkpath
-        
-        File.open(stack.compose_path,"w") do |f|
-          Orchparty::App.new(cluster_name: cluster, 
-                        application_name: stack.name, 
-                        force_variable_definition: false, 
-                        file_name: stack.stack_rb_path.to_s,
-                        status_dir: stack.release_path,
-                        options: options
-                        ).
-                        print( method: method, out_io: f)
+
+        File.open(stack.compose_path, 'w') do |f|
+          Orchparty::App.new(cluster_name: cluster,
+                             application_name: stack.name,
+                             force_variable_definition: false,
+                             file_name: stack.stack_rb_path.to_s,
+                             status_dir: stack.release_path,
+                             options: options)
+                        .print(method: method, out_io: f)
         end
-        #run_cmd(generate_cmd, :bash)
+        # run_cmd(generate_cmd, :bash)
         bash_cmd = ["cd #{stack.release_path}"]
         run_cmd(bash_cmd, :bash)
 
-
         run_cmd(["cd #{stack.release_path}",
-                 "git --no-pager diff #{stack.release_path}",
-        ], :bash, silence: true)
+                 "git --no-pager diff #{stack.release_path}"], :bash, silence: true)
 
         errors = stack.check_plan
         unless errors.empty?
@@ -123,25 +140,22 @@ module Minfra
           end
         end
 
-        unless test
-          unless @config.dev? || options[:force]==true
-            unless Ask.boolean("Are the changes ok?")
-              exit_error("Deployment aborted!")
-            end
-          end
+        return if test
 
-          message =  "deploying stack #{stack.name}: #{reason_message}."
-          Minfra::Cli::Document.document(@config,"started #{message}")
-          orch=Orchparty::App.new(cluster_name: cluster, 
-                        application_name: stack.name, 
-                        force_variable_definition: false, 
-                        file_name: stack.stack_rb_path.to_s,
-                        status_dir: stack.release_path,
-                        options: options
-                        )
-          orch.send(method)
-          Minfra::Cli::Document.document(@config,"finished #{message}")
+        if !(@config.dev? || options[:force] == true) && !Ask.boolean('Are the changes ok?')
+          exit_error('Deployment aborted!')
         end
+
+        message = "deploying stack #{stack.name}: #{reason_message}."
+        Minfra::Cli::Document.document(@config, "started #{message}")
+        orch = Orchparty::App.new(cluster_name: cluster,
+                                  application_name: stack.name,
+                                  force_variable_definition: false,
+                                  file_name: stack.stack_rb_path.to_s,
+                                  status_dir: stack.release_path,
+                                  options: options)
+        orch.send(method)
+        Minfra::Cli::Document.document(@config, "finished #{message}")
       end
 
       def rollback(stack_name, env, deployment, cluster)
@@ -153,7 +167,7 @@ module Minfra
         cluster = stack.cluster_name
 
         extra_args = args.dup
-        extra_args.delete("rollback")
+        extra_args.delete('rollback')
 
         extra_args = extra_args.join(' ')
 
@@ -161,7 +175,7 @@ module Minfra
       end
 
       def list
-        puts run_helm(%{list --all-namespaces})
+        puts run_helm(%(list --all-namespaces))
       end
 
       def destroy(stack_name)
@@ -176,13 +190,11 @@ module Minfra
       end
 
       def kubectl_command(args)
-        unless options['stack']
-          exit_error("You must specify a stack name (--stack).")
-        end
+        exit_error('You must specify a stack name (--stack).') unless options['stack']
 
         subcommand = args.shift
 
-        if ['exec', 'logs','port-forward'].include?(subcommand)
+        if %w[exec logs port-forward].include?(subcommand)
           resource = nil
           implicit_resource = 'pod'
         else
@@ -195,7 +207,8 @@ module Minfra
                      options[:cluster])
 
         cluster = stack.cluster_name
-        if [resource, implicit_resource].include?('pod') && ['delete', 'describe', 'exec', 'logs', 'port-forward'].include?(subcommand)
+        if [resource,
+            implicit_resource].include?('pod') && %w[delete describe exec logs port-forward].include?(subcommand)
           cmd_get_pods = "--kubeconfig #{kube_config_path} --context #{cluster} --namespace #{options[:stack]} get pod -o jsonpath='{range .items[*]}{.metadata.name}{\"\\n\"}'"
 
           pods_list = run_kubectl(cmd_get_pods).stdout_lines
@@ -204,9 +217,7 @@ module Minfra
 
           matching_pods = pods_list.select { |p| p.include?(fuzzy_pod_name) }
 
-          if matching_pods.empty?
-            exit_error("Could not find any pods that have '#{fuzzy_pod_name}' in their name.")
-          end
+          exit_error("Could not find any pods that have '#{fuzzy_pod_name}' in their name.") if matching_pods.empty?
 
           position = 0
           if options[:position]
@@ -237,14 +248,13 @@ module Minfra
 
       private
 
-      def init(stack_name, env, deployment, explicit_cluster)
-        template = Minfra::Cli::StackM::KubeStackTemplate.new(stack_name,
-                                                        config,
-                                                        deployment: deployment,
-                                                        cluster: explicit_cluster)
+      def init(stack_name, _env, deployment, explicit_cluster)
+        Minfra::Cli::StackM::KubeStackTemplate.new(stack_name,
+                                                   config,
+                                                   deployment: deployment,
+                                                   cluster: explicit_cluster)
 
-#        exit_error(template.error_message) unless template.valid?
-        template
+        #        exit_error(template.error_message) unless template.valid?
       end
 
       def kube_config_path

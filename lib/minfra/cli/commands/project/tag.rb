@@ -1,18 +1,19 @@
+# frozen_string_literal: true
+
 module Minfra
   module Cli
     class Project < Command
       class Tag < Command
-
-        desc "update", 'update stack tag file'
-        option "environment", aliases: ['-e'], required: true
+        desc 'update', 'update stack tag file'
+        option 'environment', aliases: ['-e'], required: true
         def update(domain, new_tag)
           tags = JSON.parse(File.read(tags_path))
 
-          raise ArgumentError.new "#{path} doesn't contain #{domain}" unless tags[options[:environment]].has_key?(domain)
+          raise ArgumentError, "#{path} doesn't contain #{domain}" unless tags[options[:environment]].key?(domain)
 
           tags[options[:environment]][domain] = new_tag
           pretty_tags = JSON.pretty_unparse(tags)
-          File.write(tags_path, pretty_tags + "\n")
+          File.write(tags_path, "#{pretty_tags}\n")
           puts "#{tags_path} - UPDATED"
           puts pretty_tags
         end
@@ -35,6 +36,6 @@ module Minfra
           Dir.getwd
         end
       end
-    end  
+    end
   end
 end

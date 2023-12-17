@@ -3,6 +3,5 @@
 $LOAD_PATH << File.expand_path('../lib', __dir__)
 require 'minfra/cli'
 
-Minfra::Cli.init(ARGV)
-Minfra::Cli.run
+Minfra::Cli.exec(ARGV)
 

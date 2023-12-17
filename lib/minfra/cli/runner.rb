@@ -12,7 +12,7 @@ module Minfra
         attr_writer :status
 
         attr_reader :stdout_lines
-        
+
         def initialize
           @stderr_lines = []
           @stdout_lines = []
@@ -33,7 +33,7 @@ module Minfra
         def exitstatus
           @status.exitstatus
         end
-        
+
         def success?
           @status.success?
         end
@@ -70,21 +70,21 @@ module Minfra
 
       def run
         debug("running (#{@runner}): #{@cmd}")
-        res=case @runner
-          when :system
-            run_system(Result.new)
-          when :popen  
-            run_threaded(Result.new)
-          when :exec
-            run_exec(Result.new)  
-          else
-            raise "unknown runner #{@runner}"  
-        end
-        
+        res = case @runner
+              when :system
+                run_system(Result.new)
+              when :popen
+                run_threaded(Result.new)
+              when :exec
+                run_exec(Result.new)
+              else
+                raise "unknown runner #{@runner}"
+              end
+
         if res.error?
           error "command failed: #{@cmd}"
-          debug  res.stdout
-          info  res.stderr
+          debug res.stdout
+          info res.stderr
         end
         if exit_on_error && res.error?
           info "command exiting on error (#{res.exitstatus})"
@@ -92,24 +92,25 @@ module Minfra
         end
         res
       end
-      
+
       private
 
       def run_exec(_res)
         exec(@cmd)
       end
+
       # you don't get stderr .... yet
       def run_system(res)
-        #https://stackoverflow.com/questions/6338908/ruby-difference-between-exec-system-and-x-or-backticks
+        # https://stackoverflow.com/questions/6338908/ruby-difference-between-exec-system-and-x-or-backticks
         begin
-          out=`#{@cmd}`
-          out.each_line do |line| res.add(line, :stdout) end 
+          out = `#{@cmd}`
+          out.each_line { |line| res.add(line, :stdout) }
         rescue StandardError
         end
-        res.status = $?
+        res.status = $CHILD_STATUS
         res
       end
-      
+
       def run_threaded(res)
         begin
           # see: http://stackoverflow.com/a/1162850/83386
@@ -135,7 +136,6 @@ module Minfra
         end
         res
       end
-      
     end
   end
 end
