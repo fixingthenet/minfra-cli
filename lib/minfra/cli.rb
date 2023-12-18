@@ -34,17 +34,17 @@ module Minfra
 
     cattr_accessor :logger, :config, :subcommands
     cattr_reader :cli
-    
+
     def self.init?
       !!@cli
     end
-      
-    def self.init(argv=[])
+
+    def self.init(argv = [])
       self.subcommands ||= {}
       @cli = CliStarter.new(argv)
     end
-    
-    def self.exec(argv)  
+
+    def self.exec(argv)
       init(argv) unless @cli
       @cli.run
     end
@@ -66,16 +66,18 @@ module Minfra
 
       def initialize(argv)
         @argv = argv
-        @options = {}
+        @options = {} # base_path, env, argv_file
         @minfrarc_loaded = false
         @minfrarc_me_loaded = false
-        @base_path = Pathname.new(ENV['MINFRA_PATH']).expand_path
 
         parse_global_options
 
+        @base_path = Pathname.new(@options[:base_path] || ENV['MINFRA_PATH']).expand_path
+        @env = @options['-e'] || ENV['MINFRA_ENVIRONMENT'] || 'dev'
         init_config
+
         init_logger
-        
+
         @logger.debug("Minfra: loglevel: #{@logger.level}, env: #{@config.orch_env}")
 
         init_minfrarc
@@ -83,10 +85,10 @@ module Minfra
         init_plugins
 
         register_subcommands
-        
+
         @plugins.setup
         require_relative 'cli/main_command'
-        
+
         setup_subcommands
       end
 
@@ -94,10 +96,8 @@ module Minfra
         Minfra::Cli::Main.start(@argv)
       end
 
-
       private
-      
-      
+
       def root_path
         Pathname.new(File.expand_path(File.join(__FILE__, '../../../')))
       end
@@ -110,11 +110,20 @@ module Minfra
           @argv.delete_at(idx)
           @argv.delete_at(idx)
         end
-        return unless (idx = argv.index('--argv_file'))
 
-        @options[:argv_file] = @argv[idx + 1]
-        @argv.delete_at(idx)
-        @argv.delete_at(idx)
+        if (idx = argv.index('--minfra_argv_file'))
+          @options[:argv_file] = @argv[idx + 1]
+          @argv.delete_at(idx)
+          @argv.delete_at(idx)
+        end
+
+        if (idx = argv.index('--minfra_path'))
+          @options[:base_path] = @argv[idx + 1]
+          @argv.delete_at(idx)
+          @argv.delete_at(idx)
+        end
+
+        @options
       end
 
       def init_minfrarc
@@ -140,25 +149,25 @@ module Minfra
 
       def init_logger
         @logger = Logger.new($stderr)
-        @logger.level = ENV['MINFRA_LOGGING_LEVEL'] || @config.project.minfra.logging_level || 'warn'
+        @logger.level = ENV['MINFRA_LOGGING_LEVEL'] || @config.project.dig(:minfra, :logging_level) || 'warn'
         Minfra::Cli.logger = @logger
       end
 
       def init_config
-        @config = Config.new(@base_path,@options['-e'] || 'dev')
+        @config = Config.new(@base_path, @options['-e'] || 'dev')
         Minfra::Cli.config = @config
       end
-
 
       def hiera_init
         @hiera_root = @base_path.join('hiera')
         hiera = Hiera.new(config: @hiera_root.join('hiera.yaml').to_s)
         Hiera.logger = :noop
-        env = @config.orch_env
-        hiera_main_path = @hiera_root.join("hieradata/#{config.project.minfra.hiera.env_path}/#{env}.eyaml")
-        raise("unknown environment #{env}, I expect a file at #{hiera_main_path}") unless hiera_main_path.exist?
+        env_path = config.project.dig(:minfra, :hiera, :env_path) || 'environment'
+        
+        hiera_main_path = @hiera_root.join("hieradata/#{env_path}/#{@env}.eyaml")
+        raise("unknown environment #{@env}, I expect a file at #{hiera_main_path}") unless hiera_main_path.exist?
 
-        scope = { 'minfra_path' => @base_path, 'hieraroot' => @hiera_root.to_s, 'env' => env }
+        scope = { 'minfra_path' => @base_path, 'hieraroot' => @hiera_root.to_s, 'env' => @env }
         special_lookups = hiera.lookup('lookup_options', {}, scope, nil, :priority)
 
         node_scope = hiera.lookup('env', {}, scope, nil, :deeper)

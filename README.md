@@ -3,12 +3,15 @@
 Is a KIND (k8s in docker) based development environment.
 
 
-## Setup
+## Setup/Configuration/Global options
 
-environment variables, alternative config keys:
-
-* MINFRA_PATH
-* MINFRA_LOGGING_LEVEL | minfra.logging_level
+Description | environment variables | alternative config keys | global commandline arguments:
+---|---|---|---
+| MINFRA_PATH | | --minfra_path [PATH TO MINFRA_PROJECT]
+| MINFRA_ENVIRONMENT | | -e [ENV]
+| MINFRA_ARGV_FILE | | --minfra_argv_file [PATH TO A CSV FILE FILE]
+| MINFRA_LOGGING_LEVEL | minfra.logging_level |
+|  | minfra.hiera.env_path | 
 
 
 ## Expected hiera data
