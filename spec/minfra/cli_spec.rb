@@ -18,6 +18,10 @@ describe Minfra::Cli do
       expect(main.argv).to eq(%w[one two three])
     end
 
+    it 'sets env' do
+      expect(main.env).to eq('test')
+    end
+    
     it 'registers some subcommands' do
       expect(Minfra::Cli.subcommands).not_to be_empty
     end

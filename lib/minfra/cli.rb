@@ -54,7 +54,7 @@ module Minfra
     end
 
     class CliStarter
-      attr_reader :options, :argv, :plugins, :config
+      attr_reader :options, :argv, :plugins, :config, :env, :base_path
 
       def minfrarc_loaded?
         @minfrarc_loaded
@@ -73,7 +73,7 @@ module Minfra
         parse_global_options
 
         @base_path = Pathname.new(@options[:base_path] || ENV['MINFRA_PATH']).expand_path
-        @env = @options['-e'] || ENV['MINFRA_ENVIRONMENT'] || 'dev'
+        @env = @options[:env] || ENV['MINFRA_ENVIRONMENT'] || 'dev'
         init_config
 
         init_logger
