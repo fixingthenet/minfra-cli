@@ -143,7 +143,7 @@ module Minfra
       end
 
       def init_plugins
-        @plugins = Minfra::Cli::Plugins.load
+        @plugins = Minfra::Cli::Plugins.load(@base_path)
         @plugins.prepare
       end
 

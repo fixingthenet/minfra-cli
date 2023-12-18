@@ -97,10 +97,10 @@ module Minfra
         @plugins.each(&block)
       end
 
-      def self.load
+      def self.load(base_path)
         found = []
-        [Pathname.new(ENV['MINFRA_PATH']).join('config', 'minfra_plugins.json'),
-         Pathname.new(ENV['MINFRA_PATH']).join('me', 'minfra_plugins.json')].each do |file|
+        [base_path.join('config', 'minfra_plugins.json'),
+         base_path.join('me', 'minfra_plugins.json')].each do |file|
           next unless File.exist?(file)
 
           plugins = JSON.parse(File.read(file))
