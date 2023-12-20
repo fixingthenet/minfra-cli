@@ -54,7 +54,7 @@ module Minfra
     end
 
     class CliStarter
-      attr_reader :options, :argv, :plugins, :config, :env, :base_path
+      attr_reader :options, :argv, :plugins, :config, :env, :base_path, :logger
 
       def minfrarc_loaded?
         @minfrarc_loaded
@@ -93,7 +93,15 @@ module Minfra
       end
 
       def run
-        Minfra::Cli::Main.start(@argv)
+        if @options[:argv_file]
+           CSV.foreach(@options[:argv_file]) do |row|
+             args=@argv + row
+             @logger.debug("Running (#{env}): #{args.join(' ')} ")
+             Minfra::Cli::Main.start(args)
+           end
+        else
+          Minfra::Cli::Main.start(@argv)
+        end  
       end
 
       private

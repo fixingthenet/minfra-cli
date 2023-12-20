@@ -2,7 +2,7 @@
  * refactoring Cli to CliStarter
  * config: NO support for "environment" specific overrides in configs, use hiera
  * support for argv_file to run commands from a file
- * test: more of them
+ * tests: more of them
 # 1.13.1
  * BUG: not every deployer contexts have cleanups
 # 1.13.0

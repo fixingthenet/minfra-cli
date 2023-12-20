@@ -25,5 +25,7 @@ describe Minfra::Cli do
     it 'registers some subcommands' do
       expect(Minfra::Cli.subcommands).not_to be_empty
     end
+    
+    it 'runs commands from a file'
   end
 end
