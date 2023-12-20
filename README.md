@@ -7,7 +7,7 @@ Is a KIND (k8s in docker) based development environment.
 
 
 | Description | Environment variable | Project key | Global commandline arguments | Hiera key |
-| --- | --- | --- | --- |
+| --- | --- | --- | --- | --- |
 |   | MINFRA_NAME          | name                  |                                              |   |
 |   | MINFRA_PATH          |                       | --minfra_path [PATH TO MINFRA_PROJECT]       |   |
 |   | MINFRA_ENVIRONMENT   |                       | -e [ENV]                                     |   |
