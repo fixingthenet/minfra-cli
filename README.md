@@ -6,8 +6,8 @@ Is a KIND (k8s in docker) based development environment.
 ## Setup/Configuration/Global options
 
 
-|Description | environment variable | project keys | global commandline arguments | hiera key |
-|---|---|---|---|
+| Description | environment variable | project keys | global commandline arguments | hiera key |
+| --- | --- | --- | --- |
 |   | MINFRA_NAME          |                       | name                                         |   |
 |   | MINFRA_PATH          |                       | --minfra_path [PATH TO MINFRA_PROJECT]       |   |
 |   | MINFRA_ENVIRONMENT   |                       | -e [ENV]                                     |   |
