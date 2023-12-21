@@ -22,6 +22,10 @@ describe Minfra::Cli do
       expect(main.env).to eq('test')
     end
     
+    it "sets up config correctly" do
+      expect(main.config.orch_env).to eq('test')
+    end
+    
     it 'registers some subcommands' do
       expect(Minfra::Cli.subcommands).not_to be_empty
     end

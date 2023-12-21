@@ -130,7 +130,8 @@ module Minfra
 
         run_cmd(["cd #{stack.release_path}",
                  "git --no-pager diff #{stack.release_path}"], :bash, silence: true)
-
+        #run_cmd("helm diff upgrade --allow-unreleased ccs-integration-service state/stacks/development-staging-1/ccs-integration-service/helm -n ccs-integration-service", :bash, silence: true)
+        
         errors = stack.check_plan
         unless errors.empty?
           if config['force_mem']

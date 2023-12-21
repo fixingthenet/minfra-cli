@@ -162,7 +162,7 @@ module Minfra
       end
 
       def init_config
-        @config = Config.new(@base_path, @options['-e'] || 'dev')
+        @config = Config.new(@base_path, @env || 'dev')
         Minfra::Cli.config = @config
       end
 
