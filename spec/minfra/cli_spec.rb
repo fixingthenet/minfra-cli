@@ -29,6 +29,10 @@ describe Minfra::Cli do
     it 'registers some subcommands' do
       expect(Minfra::Cli.subcommands).not_to be_empty
     end
+
+    it 'runs a single command' do
+      expect(Minfra::Cli.init(['version']).run).to eq(0)
+    end
     
     it 'runs commands from a file'
   end

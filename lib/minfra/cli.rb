@@ -6,6 +6,7 @@ require 'json'
 require 'ostruct'
 require 'hiera'
 
+require_relative 'cli/errors'
 require_relative 'cli/logging'
 require_relative 'cli/templater'
 
@@ -93,15 +94,26 @@ module Minfra
       end
 
       def run
+        exit_code = 0
         if @options[:argv_file]
            CSV.foreach(@options[:argv_file]) do |row|
              args=@argv + row
              @logger.debug("Running (#{env}): #{args.join(' ')} ")
-             Minfra::Cli::Main.start(args)
+             begin
+               Minfra::Cli::Main.start(args)
+             rescue StandardError # esp. Minfra::Cli::Errors::ExitError !
+              exit_code = 1
+             end
            end
+           @logger.debug("Done argv_file loop")
         else
-          Minfra::Cli::Main.start(@argv)
-        end  
+          begin
+            Minfra::Cli::Main.start(@argv)
+          rescue Minfra::Cli::Errors::ExitError
+            exit_code = 1
+          end
+        end
+        exit_code
       end
 
       private

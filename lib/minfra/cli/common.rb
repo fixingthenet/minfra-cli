@@ -5,11 +5,8 @@ require 'pathname'
 module Minfra
   module Cli
     module Common
-      def exit_error(msg)
-        warn("ERROR: #{msg}")
-        exit 1
-      end
-
+      include Minfra::Cli::Logging
+      
       def run_cmd(cmd, type = :non_system, silence: false)
         debug(cmd)
         case type

@@ -9,7 +9,7 @@ module Minfra
 
       def exit_error(str)
         error str
-        exit 1
+        raise Minfra::Cli::Errors::ExitError.new(str)
       end
 
       def info(str)
