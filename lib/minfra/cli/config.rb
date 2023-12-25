@@ -51,8 +51,8 @@ module Minfra
       def describe(_environment)
         {
           env: {
-            minfra_name: ENV['MINFRA_NAME'],
-            minfra_path: ENV['MINFRA_PATH']
+            minfra_name: ENV.fetch('MINFRA_NAME', nil),
+            minfra_path: ENV.fetch('MINFRA_PATH', nil)
           },
           base_path: base_path.to_s,
           me_path: me_path.to_s,
@@ -76,7 +76,7 @@ module Minfra
       end
 
       def endpoint(name)
-        Hashie::Mash.new({ "api_key": api_key }).deep_merge(@project.endpoints[name])
+        Hashie::Mash.new({ api_key: }).deep_merge(@project.endpoints[name])
       rescue StandardError
         raise("endpoint #{name} is undefinded please add <env>:endpoints:#{name} to you #{config_path} file ")
       end

@@ -25,9 +25,7 @@ module Minfra
 
           @cluster_name = @cluster
           @cluster_name ||= "kind-#{@config.name}" if @config.dev?
-          if cluster_path.exist? && (@cluster_name.nil? || @cluster_name.empty?)
-            @cluster_name = YAML.safe_load(File.read(cluster_path))[env.to_s]
-          end
+          @cluster_name = YAML.safe_load(File.read(cluster_path))[env.to_s] if cluster_path.exist? && (@cluster_name.nil? || @cluster_name.empty?)
           unless @cluster_name
             error "Cluster name unknown (not given explicitly and '#{cluster_path}' missing)"
             exit 1

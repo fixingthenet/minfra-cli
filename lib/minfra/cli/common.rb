@@ -6,7 +6,7 @@ module Minfra
   module Cli
     module Common
       include Minfra::Cli::Logging
-      
+
       def run_cmd(cmd, type = :non_system, silence: false)
         debug(cmd)
         case type
@@ -26,7 +26,7 @@ module Minfra
       end
 
       def parse_cmd(cmd, silence: false)
-        reply = JSON.parse(run_cmd(cmd, silence: silence))
+        reply = JSON.parse(run_cmd(cmd, silence:))
       rescue JSON::ParserError, TypeError
         error "ERROR: #{$ERROR_INFO.message}"
         error reply

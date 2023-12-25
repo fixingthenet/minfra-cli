@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'pathname'
 module Orchparty
   class DSLParser
@@ -17,7 +19,7 @@ module Orchparty
 
   class Builder
     def self.build(*args, block)
-      builder = self.new(*args)
+      builder = new(*args)
       builder.instance_eval(&block)
       builder._build
     end
@@ -35,7 +37,6 @@ module Orchparty
   end
 
   class RootBuilder < Builder
-
     def initialize
       @root = AST.root
     end
@@ -64,9 +65,8 @@ module Orchparty
   end
 
   class MixinBuilder < Builder
-
     def initialize(name)
-      @mixin = AST.mixin(name: name)
+      @mixin = AST.mixin(name:)
     end
 
     def service(name, &block)
@@ -99,9 +99,8 @@ module Orchparty
   end
 
   class ApplicationBuilder < Builder
-
     def initialize(name)
-      @application = AST.application(name: name)
+      @application = AST.application(name:)
     end
 
     def mix(name)
@@ -143,7 +142,6 @@ module Orchparty
   end
 
   class HashBuilder < Builder
-
     def method_missing(_, *values, &block)
       if block_given?
         value = HashBuilder.build(block)
@@ -180,7 +178,6 @@ module Orchparty
   end
 
   class CommonBuilder < Builder
-
     def initialize(node)
       @node = node
     end
@@ -191,7 +188,7 @@ module Orchparty
 
     def method_missing(name, *values, &block)
       if block_given?
-        assign_or_merge(@node, name,  HashBuilder.build(block))
+        assign_or_merge(@node, name, HashBuilder.build(block))
       else
         assign_or_merge(@node, name, values.first)
       end
@@ -221,9 +218,8 @@ module Orchparty
   end
 
   class ServiceBuilder < CommonBuilder
-
     def initialize(name)
-      super AST.service(name: name)
+      super AST.service(name:)
     end
   end
 end

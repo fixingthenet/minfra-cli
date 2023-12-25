@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module Orchparty
   module Transformations
     class Variable
-
       def initialize(opts = {})
         @force_variable_definition = opts[:force_variable_definition]
       end
@@ -21,11 +22,11 @@ module Orchparty
       def resolve(application, subject, service)
         subject.deep_transform_values! do |v|
           if v.respond_to?(:call)
-            eval_value(build_context(application: application, service: service), v) 
+            eval_value(build_context(application:, service:), v)
           elsif v.is_a? Array
             v.map do |v|
               if v.respond_to?(:call)
-                eval_value(build_context(application: application, service: service), v) 
+                eval_value(build_context(application:, service:), v)
               else
                 v
               end
@@ -42,10 +43,10 @@ module Orchparty
 
       def build_context(application:, service:)
         variables = application._variables || {}
-        variables = variables.merge({application: application.merge(application._variables)})
+        variables = variables.merge({ application: application.merge(application._variables) })
         if service
           variables = variables.merge(service._variables)
-          variables = variables.merge({service: service.merge(service._variables)})
+          variables = variables.merge({ service: service.merge(service._variables) })
         end
         context = Context.new(variables)
         context._force_variable_definition = @force_variable_definition

@@ -1,0 +1,31 @@
+---
+AllCops:
+  TargetRubyVersion: 3.1
+  NewCops: enable
+  Exclude:
+    - '/**/schema.rb'
+Layout/LineLength:
+  Max: 200
+Metrics/AbcSize:
+  Enabled: false
+
+# disabling it our stack.rb files have big blocks
+Metrics/BlockLength:
+  Enabled: false
+Metrics/MethodLength:
+  Max: 25
+Style/Documentation:
+  Enabled: false
+Style/OpenStructUse:
+  Enabled: false
+# we use extensive blocks for openings and closing connections, give us more room (3 -> 5)
+Metrics/BlockNesting:
+  Max: 5
+
+# we have params like "op","in", ... but not shorter than that please
+Naming/MethodParameterName:
+  MinNameLength: 2
+
+# we have full controll over versions, we don't need this check
+Gemspec/RequiredRubyVersion:
+  Enabled: false

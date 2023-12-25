@@ -45,7 +45,7 @@ module Minfra
 
         info "step: creating '#{kind_name}' kind cluster (can take some minutes)"
         kind_kube_path = Runner.run('echo $KUBECONFIG').to_s.strip
-        kind_config = Templater.read(config.base_path.join('config', 'kind.yaml.erb'), params: { config: config })
+        kind_config = Templater.read(config.base_path.join('config', 'kind.yaml.erb'), params: { config: })
         File.write(config.kind_config_path, kind_config)
 
         run(%(KIND_EXPERIMENTAL_DOCKER_NETWORK=#{kind_name} kind create cluster --name "#{kind_name}" --config #{@config.kind_config_path}))
@@ -121,8 +121,8 @@ module Minfra
                              force_variable_definition: false,
                              file_name: stack.stack_rb_path.to_s,
                              status_dir: stack.release_path,
-                             options: options)
-                        .print(method: method, out_io: f)
+                             options:)
+                        .print(method:, out_io: f)
         end
         # run_cmd(generate_cmd, :bash)
         bash_cmd = ["cd #{stack.release_path}"]
@@ -130,8 +130,8 @@ module Minfra
 
         run_cmd(["cd #{stack.release_path}",
                  "git --no-pager diff #{stack.release_path}"], :bash, silence: true)
-        #run_cmd("helm diff upgrade --allow-unreleased ccs-integration-service state/stacks/development-staging-1/ccs-integration-service/helm -n ccs-integration-service", :bash, silence: true)
-        
+        # run_cmd("helm diff upgrade --allow-unreleased ccs-integration-service state/stacks/development-staging-1/ccs-integration-service/helm -n ccs-integration-service", :bash, silence: true)
+
         errors = stack.check_plan
         unless errors.empty?
           if config['force_mem']
@@ -143,9 +143,7 @@ module Minfra
 
         return if test
 
-        if !(@config.dev? || options[:force] == true) && !Ask.boolean('Are the changes ok?')
-          exit_error('Deployment aborted!')
-        end
+        exit_error('Deployment aborted!') if !(@config.dev? || options[:force] == true) && !Ask.boolean('Are the changes ok?')
 
         message = "deploying stack #{stack.name}: #{reason_message}."
         Minfra::Cli::Document.document(@config, "started #{message}")
@@ -154,7 +152,7 @@ module Minfra
                                   force_variable_definition: false,
                                   file_name: stack.stack_rb_path.to_s,
                                   status_dir: stack.release_path,
-                                  options: options)
+                                  options:)
         orch.send(method)
         Minfra::Cli::Document.document(@config, "finished #{message}")
       end
@@ -252,7 +250,7 @@ module Minfra
       def init(stack_name, _env, deployment, explicit_cluster)
         Minfra::Cli::StackM::KubeStackTemplate.new(stack_name,
                                                    config,
-                                                   deployment: deployment,
+                                                   deployment:,
                                                    cluster: explicit_cluster)
 
         #        exit_error(template.error_message) unless template.valid?

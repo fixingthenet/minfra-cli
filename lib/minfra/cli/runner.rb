@@ -118,7 +118,7 @@ module Minfra
           # Open4 might be a solution. Using Select might be a solution. Using Process.fork might be a solution....
           Open3.popen3(@cmd) do |_stdin, stdout, stderr, thread|
             # read each stream from a new thread
-            { stdout: stdout, stderr: stderr }.each do |key, stream|
+            { stdout:, stderr: }.each do |key, stream|
               Thread.new do
                 until (raw_line = stream.gets).nil?
                   #                   stream.each do |raw_line|

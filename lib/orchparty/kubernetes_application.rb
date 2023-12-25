@@ -34,7 +34,7 @@ module Orchparty
         debug "Rendering: #{file_path}"
         file_path = File.join(dir_path, file_path) unless file_path.start_with?('/')
         if file_path.end_with?('.erb')
-          helm.application = OpenStruct.new(cluster_name: cluster_name, namespace: namespace)
+          helm.application = OpenStruct.new(cluster_name:, namespace:)
           template = Erubis::Eruby.new(File.read(file_path))
           template.filename = file_path
           yaml = template.result(helm.get_binding)
@@ -79,13 +79,13 @@ module Orchparty
 
       def upgrade_cmd(fix_file_path = nil)
         Minfra::Cli::HelmRunner.new("upgrade --namespace #{namespace} --kube-context #{cluster_name} --version #{service.version} #{service.name} #{service.chart} #{template(
-          value_path, service, fix_file_path: fix_file_path
+          value_path, service, fix_file_path:
         )}")
       end
 
       def install_cmd(fix_file_path = nil)
         Minfra::Cli::HelmRunner.new("install --create-namespace --namespace #{namespace} --kube-context #{cluster_name} --version #{service.version} #{service.name} #{service.chart} #{template(
-          value_path, service, fix_file_path: fix_file_path
+          value_path, service, fix_file_path:
         )}")
       end
     end
@@ -97,12 +97,12 @@ module Orchparty
 
       def upgrade_cmd(fix_file_path = nil)
         Minfra::Cli::KubeCtlRunner.new("apply --namespace #{namespace} --context #{cluster_name} #{template(value_path,
-                                                                                                            service, fix_file_path: fix_file_path)}")
+                                                                                                            service, fix_file_path:)}")
       end
 
       def install_cmd(fix_file_path = nil)
         Minfra::Cli::KubeCtlRunner.new("apply --namespace #{namespace} --context #{cluster_name} #{template(value_path,
-                                                                                                            service, fix_file_path: fix_file_path)}")
+                                                                                                            service, fix_file_path:)}")
       end
 
       def cleanup
@@ -117,13 +117,13 @@ module Orchparty
 
       def upgrade_cmd(fix_file_path = nil)
         "kubectl --namespace #{namespace} --context #{cluster_name} create secret generic --dry-run -o yaml #{service[:name]}  #{template(
-          value_path, service, flag: '--from-file=', fix_file_path: fix_file_path
+          value_path, service, flag: '--from-file=', fix_file_path:
         )} | kubectl --context #{cluster_name} apply -f -"
       end
 
       def install_cmd(fix_file_path = nil)
         "kubectl --namespace #{namespace} --context #{cluster_name} create secret generic --dry-run -o yaml #{service[:name]}  #{template(
-          value_path, service, flag: '--from-file=', fix_file_path: fix_file_path
+          value_path, service, flag: '--from-file=', fix_file_path:
         )} | kubectl --context #{cluster_name} apply -f -"
       end
     end
@@ -216,8 +216,8 @@ module Orchparty
 
       def build_chart
         dir = @app.status_dir.join('helm') # duplication
-        params = service._services.map { |s| app_config.services[s.to_sym] }.map { |s| [s.name, s] }.to_h
-        run(templates_path: File.expand_path(service.template, dir_path), params: params, output_chart_path: dir,
+        params = service._services.map { |s| app_config.services[s.to_sym] }.to_h { |s| [s.name, s] }
+        run(templates_path: File.expand_path(service.template, dir_path), params:, output_chart_path: dir,
             chart: service)
         yield dir
       end
@@ -231,10 +231,10 @@ module Orchparty
           params.each do |app_name, subparams|
             subparams[:chart] = chart
             used_vars = generate_documents_from_erbs(
-              templates_path: templates_path,
-              app_name: app_name,
+              templates_path:,
+              app_name:,
               params: subparams,
-              output_chart_path: output_chart_path
+              output_chart_path:
             )
             used_vars.each do |variable, value|
               helm_values.puts "#{variable}: \"#{value}\""
@@ -313,8 +313,8 @@ class KubernetesApplication
     templates_path = file_path.join('../../chart-templates').expand_path # don't ask. the whole concept of multiple charts in an app stinks...
 
     generate_chart_yaml(
-      templates_path: templates_path,
-      output_chart_path: output_chart_path,
+      templates_path:,
+      output_chart_path:,
       chart_name: namespace
     )
 
@@ -331,7 +331,7 @@ class KubernetesApplication
     template_path = File.join(templates_path, 'Chart.yaml.erb')
     output_path = File.join(output_chart_path, 'Chart.yaml')
 
-    res = Minfra::Cli::Templater.read(template_path, params: { chart_name: chart_name })
+    res = Minfra::Cli::Templater.read(template_path, params: { chart_name: })
     File.write(output_path, res)
   end
 
@@ -358,13 +358,13 @@ class KubernetesApplication
       service = app_config[:services][name]
       debug("Generating Service: #{name}(#{service._type}) #{method}")
       deployable_class = "::Orchparty::Services::#{service._type.classify}".constantize
-      deployable = deployable_class.new(cluster_name: cluster_name,
-                                        namespace: namespace,
-                                        file_path: file_path,
-                                        app_config: app_config,
+      deployable = deployable_class.new(cluster_name:,
+                                        namespace:,
+                                        file_path:,
+                                        app_config:,
                                         out_io: @out_io,
                                         app: self,
-                                        service: service)
+                                        service:)
       deployable.send(method)
     end
   end
