@@ -14,6 +14,7 @@ Is a KIND (k8s in docker) based development environment.
 |   | MINFRA_ARGV_FILE     |                       | --minfra_argv_file [PATH TO A CSV FILE FILE] |   |
 |   | MINFRA_LOGGING_LEVEL | minfra.logging_level  |                                              |   |
 |   |                      | minfra.hiera.env_path |                                              |   |
+|   |                      | default_stacks        |                                              | env.stacks | env.roles   |
 
 
 ## Expected hiera data

@@ -1,4 +1,5 @@
 # 2.0.0
+ * only allow to deploy stacks which are in env.roles, env.stacks or project:default_stacks
  * refactoring Cli to CliStarter
  * config: NO support for "environment" specific overrides in configs, use hiera
  * support for argv_file to run commands from a file
