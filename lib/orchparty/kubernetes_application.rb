@@ -149,11 +149,11 @@ module Orchparty
       end
 
       def upgrade_cmd
-        "kubectl --namespace #{namespace} --context #{cluster_name} label --overwrite #{service[:resource]} #{service[:name]} #{service['value']}"
+        install_cmd
       end
 
       def install_cmd
-        "kubectl --namespace #{namespace} --context #{cluster_name} label --overwrite #{service[:resource]} #{service[:name]} #{service['value']}"
+        Minfra::Cli::KubeCtlRunner.new("label --namespace #{namespace} --context #{cluster_name} --overwrite #{service[:resource]} #{service[:name]} #{service['value']}")
       end
     end
 

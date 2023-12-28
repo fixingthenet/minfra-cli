@@ -1,5 +1,7 @@
+# 1.13.3
+ * BUG: fixing 'labelÄ
 # 1.13.2
- * BUG: fixing generic secret
+ * BUG: fixing 'generic_secret'
 # 1.13.1
  * BUG: not every deployer contexts have cleanups
 # 1.13.0
