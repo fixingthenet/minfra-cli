@@ -1,3 +1,5 @@
+# 1.13.2
+ * BUG: fixing generic secret
 # 1.13.1
  * BUG: not every deployer contexts have cleanups
 # 1.13.0
