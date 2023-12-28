@@ -116,16 +116,25 @@ module Orchparty
       end
 
       def upgrade_cmd(fix_file_path = nil)
-        "kubectl --namespace #{namespace} --context #{cluster_name} create secret generic --dry-run -o yaml #{service[:name]}  #{template(
-          value_path, service, flag: '--from-file=', fix_file_path: fix_file_path
-        )} | kubectl --context #{cluster_name} apply -f -"
+        install_cmd(fix_file_path)
       end
 
       def install_cmd(fix_file_path = nil)
-        "kubectl --namespace #{namespace} --context #{cluster_name} create secret generic --dry-run -o yaml #{service[:name]}  #{template(
-          value_path, service, flag: '--from-file=', fix_file_path: fix_file_path
-        )} | kubectl --context #{cluster_name} apply -f -"
+        cmd="kubectl --namespace #{namespace} create secret generic --dry-run=client -o yaml #{service[:name]}  #{template(value_path, service, flag: '--from-file=')} > #{tempfile.path}"
+        res = system(cmd)
+        Minfra::Cli::KubeCtlRunner.new("apply --context #{cluster_name} -f #{tempfile.path}")
       end
+      
+      def cleanup
+        tempfile.unlink
+      end
+
+      private
+      
+      def tempfile
+        @tempfile ||= Tempfile.new('secret_generic')
+      end
+      
     end
 
     class Label < Context
