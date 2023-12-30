@@ -5,13 +5,13 @@ module Minfra
     class Plugin < Command
       desc 'describe', 'describe plugins'
       def describe
-        Minfra::Cli.plugins.each do |plugin|
+        Minfra::Cli.cli.plugins.each do |plugin|
           puts "#{plugin.name} (#{plugin.version})"
         end
       end
       desc 'install', 'install plugins'
       def install
-        Minfra::Cli.plugins.each do |plugin|
+        Minfra::Cli.cli.plugins.each do |plugin|
           puts "setup: #{plugin.name}"
           plugin.install
         end

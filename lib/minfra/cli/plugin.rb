@@ -21,6 +21,14 @@ module Minfra
           @disabled
         end
 
+        def install
+          if path
+            system("cd #{path}; bundle install")
+          else
+            system("gem install #{name} --version #{version}")
+          end
+        end
+
         # adds the plugin to the
         def prepare
           debug("plugin prepare: #{name}, #{version}, disabled: #{disabled?}")

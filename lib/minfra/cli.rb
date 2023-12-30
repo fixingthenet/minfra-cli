@@ -35,21 +35,20 @@ module Minfra
     extend Minfra::Cli::Logging
     include Minfra::Cli::Hook
 
-    cattr_accessor :logger, :config, :subcommands
-    cattr_reader :cli
+    cattr_accessor :logger, :config, :subcommands,:cli
 
     def self.init?
-      !!@cli
+      !!cli
     end
 
     def self.init(argv = [])
       self.subcommands ||= {}
-      @cli = CliStarter.new(argv)
+      self.cli = CliStarter.new(argv)
     end
 
     def self.exec(argv)
-      init(argv) unless @cli
-      @cli.run
+      init(argv) unless init?
+      cli.run
     end
 
     def self.register(subcommand, info, command)

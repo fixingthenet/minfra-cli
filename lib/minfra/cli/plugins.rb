@@ -16,14 +16,6 @@ module Minfra
         @plugins.each(&:setup)
       end
 
-      def install
-        if path
-          system("cd #{path}; bundle install")
-        else
-          system("gem install #{name} --version #{version}")
-        end
-      end
-
       def each(&)
         @plugins.each(&)
       end
