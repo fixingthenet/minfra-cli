@@ -1,4 +1,5 @@
 # 2.0.0
+ * dropping ruby < 3.1 support
  * only allow to deploy stacks which are in env.roles, env.stacks or project:default_stacks
  * refactoring Cli to CliStarter
  * config: NO support for "environment" specific overrides in configs, use hiera
