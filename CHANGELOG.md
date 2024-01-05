@@ -1,3 +1,6 @@
+# 2.0.1
+ Refactorings
+ * installing into Kernel only when 'exec' not at 'init' time
 # 2.0.0
  Incompatibility
  * dropping ruby < 3.1 support

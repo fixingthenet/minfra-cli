@@ -35,8 +35,7 @@ module Minfra
         init_plugins
 
         register_subcommands
-        
-        install # don't like this, but some plugins need the lookup....not good
+
         @plugins.setup
         require_relative 'main_command'
 

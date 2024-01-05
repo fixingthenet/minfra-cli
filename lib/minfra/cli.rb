@@ -51,6 +51,7 @@ module Minfra
 
     def self.exec(argv)
       init(argv) unless init?
+      cli.install
       cli.run
     end
 
