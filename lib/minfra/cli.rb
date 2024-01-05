@@ -23,6 +23,8 @@ require_relative 'cli/helm_runner'
 require_relative 'cli/kubectl_runner'
 require_relative 'cli/plugins'
 require_relative 'cli/plugin'
+require_relative 'cli/hiera_looker'
+require_relative 'cli/env'
 require_relative 'cli/cli_starter'
 
 require 'active_support'
@@ -48,6 +50,7 @@ module Minfra
 
     def self.exec(argv)
       init(argv) unless init?
+      cli.install
       cli.run
     end
 

@@ -3,7 +3,7 @@
 module Minfra
   module Cli
     class CliStarter
-      attr_reader :options, :argv, :plugins, :config, :env, :base_path, :logger
+      attr_reader :options, :argv, :plugins, :config, :env_name, :base_path, :logger, :hiera, :envs, :env
 
       def minfrarc_loaded?
         @minfrarc_loaded
@@ -22,7 +22,7 @@ module Minfra
         parse_global_options
 
         @base_path = Pathname.new(@options[:base_path] || ENV.fetch('MINFRA_PATH', nil)).expand_path
-        @env = @options[:env] || ENV['MINFRA_ENVIRONMENT'] || 'dev'
+        @env_name = @options[:env] || ENV['MINFRA_ENVIRONMENT'] || 'dev'
         init_config
 
         init_logger
@@ -30,7 +30,8 @@ module Minfra
         @logger.debug("Minfra: loglevel: #{@logger.level}, env: #{@config.orch_env}")
 
         init_minfrarc
-        hiera_init
+        init_envs
+        init_hiera
         init_plugins
 
         register_subcommands
@@ -46,7 +47,7 @@ module Minfra
         if @options[:argv_file]
           CSV.foreach(@options[:argv_file]) do |row|
             args = @argv + row
-            @logger.debug("Running (#{env}): #{args.join(' ')} ")
+            @logger.debug("Running (#{env_name}): #{args.join(' ')} ")
             begin
               Minfra::Cli::Main.start(args)
             rescue StandardError # esp. Minfra::Cli::Errors::ExitError !
@@ -64,6 +65,18 @@ module Minfra
         exit_code
       end
 
+      def install
+        cli = self
+        Kernel.define_method(:minfra_cli) do
+          cli
+        end
+        Kernel.define_method(:l) do |key, value = nil|
+          minfra_cli.hiera.l(key, value)
+        end
+        Kernel.define_method(:l!) do |key, value = nil|
+          minfra_cli.hiera.l!(key, value)
+        end
+      end
       private
 
       def root_path
@@ -122,50 +135,23 @@ module Minfra
       end
 
       def init_config
-        @config = Config.new(@base_path, @env || 'dev')
+        @config = Config.new(@base_path, @env_name || 'dev')
         Minfra::Cli.config = @config
       end
 
-      def hiera_init
-        @hiera_root = @base_path.join('hiera')
-        hiera = Hiera.new(config: @hiera_root.join('hiera.yaml').to_s)
-        Hiera.logger = :noop
-        env_path = config.project.dig(:minfra, :hiera, :env_path) || 'environment'
-
-        hiera_main_path = @hiera_root.join("hieradata/#{env_path}/#{@env}.eyaml")
-        raise("unknown environment #{@env}, I expect a file at #{hiera_main_path}") unless hiera_main_path.exist?
-
-        scope = { 'minfra_path' => @base_path, 'hieraroot' => @hiera_root.to_s, 'env' => @env }
-        special_lookups = hiera.lookup('lookup_options', {}, scope, nil, :priority)
-
-        node_scope = hiera.lookup('env', {}, scope, nil, :deeper)
-        scope = scope.merge(node_scope)
-        cache = {}
-        Kernel.define_method(:l) do |value, default = nil|
-          return cache[value] if cache.key?(value)
-
-          values = value.split('.')
-          fst_value = values.shift
-
-          lookup_type = if special_lookups[fst_value]
-                          { merge_behavior: special_lookups[fst_value]['merge'].to_sym }
-                        else
-                          :deep
-                        end
-
-          result = hiera.lookup(fst_value, default, scope, nil, lookup_type)
-          result = result.dig(*values) if !values.empty? && result.is_a?(Hash) # we return nil or the scalar value and only drill down on hashes
-
-          result = Hashie::Mash.new(result) if result.is_a?(Hash)
-          cache[value] = result
-          result
+      def init_hiera
+        @hiera = @env.hiera
+      end
+      
+      def init_envs
+        @envs={}
+        env_path = config.project.dig(:minfra, :hiera, :env_path) || 'environments'
+        root = base_path.join('hiera')
+        root.join('hieradata',env_path).glob('*.eyaml').sort.each do |path|
+          env_name = path.basename.sub(/(\..+)/,'').to_s
+          @envs[env_name]=Env.new(hiera_root: root, hiera_env_path: env_path, name: env_name)
         end
-        Kernel.define_method(:l!) do |value, default = nil|
-          v = l(value, default)
-          raise("Value not found! #{value}") if v.nil?
-
-          v
-        end
+        @env = @envs[@env_name] # set the current env
       end
 
       def register_subcommands
