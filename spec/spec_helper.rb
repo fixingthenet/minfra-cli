@@ -6,6 +6,13 @@ require 'minfra/cli'
 
 # RSpec configure documentation: http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
+
+  config.before(:suite) do 
+    minfra_path =  File.expand_path(File.join(__FILE__, "../fixture/minfra_example"))
+    Minfra::Cli.init(['--minfra_path', minfra_path])
+  end
+
+
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end

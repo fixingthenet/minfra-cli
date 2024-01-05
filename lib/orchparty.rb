@@ -12,14 +12,14 @@ require 'orchparty/kubernetes_application'
 require 'hash'
 
 module Orchparty
-
   def self.options
     @@options
   end
+
   def self.options=(opt)
-     @@options=opt
+    @@options = opt
   end
-  
+
   class App
     attr_reader :options
 
@@ -30,9 +30,9 @@ module Orchparty
       @file_name = file_name
       @status_dir = status_dir
       @options = options
-      
-      Orchparty.options=options
-      
+
+      Orchparty.options = options
+
       load_plugins
     end
 
@@ -41,7 +41,7 @@ module Orchparty
     end
 
     def print(method:, out_io:)
-      app(out_io: out_io).print(method)
+      app(out_io:).print(method)
     end
 
     def install
@@ -54,26 +54,26 @@ module Orchparty
 
     private
 
-    def app(out_io: STDOUT)
+    def app(out_io: $stdout)
       parsed = Orchparty::Kubernetes::DSLParser.new(@file_name).parse
       app_config = Transformations.transform_kubernetes(parsed, force_variable_definition: @force_variable_definition).applications[@application_name]
       KubernetesApplication.new(
-        app_config: app_config, 
-        namespace: @application_name, 
-        cluster_name: @cluster_name, 
+        app_config:,
+        namespace: @application_name,
+        cluster_name: @cluster_name,
         file_name: @file_name,
         status_dir: @status_dir,
-        out_io: out_io
+        out_io:
       )
     end
-    
+
     def generate(plugin_name, options, plugin_options)
       plugins[plugin_name].generate(ast(options), plugin_options)
     end
 
     def ast(filename:, application:, force_variable_definition: nil)
       Transformations.transform(Orchparty::DSLParser.new(filename).parse,
-                                force_variable_definition: force_variable_definition).applications[application]
+                                force_variable_definition:).applications[application]
     end
 
     def load_plugins

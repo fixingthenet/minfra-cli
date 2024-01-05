@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'pathname'
 
 module Minfra
@@ -7,6 +9,7 @@ module Minfra
         include ::Minfra::Cli::Logging
 
         attr_reader :name, :env, :deployment, :app_path
+
         def initialize(name, config)
           @name       = name
           @path       = config.stacks_path.join(name)
@@ -19,11 +22,10 @@ module Minfra
 
         def cluster_name
           return @cluster_name if defined?(@cluster_name)
+
           @cluster_name = @cluster
           @cluster_name ||= "kind-#{@config.name}" if @config.dev?
-          if cluster_path.exist? && (@cluster_name.nil? || @cluster_name.empty?)
-            @cluster_name = YAML.load(File.read(cluster_path))[env.to_s]
-          end
+          @cluster_name = YAML.safe_load(File.read(cluster_path))[env.to_s] if cluster_path.exist? && (@cluster_name.nil? || @cluster_name.empty?)
           unless @cluster_name
             error "Cluster name unknown (not given explicitly and '#{cluster_path}' missing)"
             exit 1
@@ -32,18 +34,14 @@ module Minfra
         end
 
         def valid?
-          unless @path.exist?
-            @errors << "stack path #{@path} doesn't exist"
-          end
+          @errors << "stack path #{@path} doesn't exist" unless @path.exist?
 
-          unless @app_path.exist?
-            @errors << "stack.rb file #{@app_path} doesn't exist"
-          end
+          @errors << "stack.rb file #{@app_path} doesn't exist" unless @app_path.exist?
           @errors.empty?
         end
 
         def read
-          t=Minfra::Cli::Templater.new(File.read(@app_path))
+          t = Minfra::Cli::Templater.new(File.read(@app_path))
           @content = Hashie::Mash.new(JSON.parse(t.render({})))
         end
 
@@ -54,11 +52,10 @@ module Minfra
         def client
           @content.client
         end
-        
-        def to_s
-          JSON.generate(@content, {indent: "  ", object_nl: "\n"})
-        end
 
+        def to_s
+          JSON.generate(@content, { indent: '  ', object_nl: "\n" })
+        end
       end
     end
   end

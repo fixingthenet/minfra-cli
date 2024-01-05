@@ -1,3 +1,18 @@
+# 2.0.0
+ Incompatibility
+ * dropping ruby < 3.1 support
+ * config: NO support for "environment" specific overrides in configs, use hiera
+ * only allow to deploy stacks which are in env.roles, env.stacks or project:default_stacks
+ * Minfra::Cli.env not supported
+
+ Refactorings/Features 
+ * refactoring Cli to CliStarter
+ * refactoring Cli to HierLooker
+ * support for argv_file to run commands from a file
+ * tests: more of them
+ * new command: dev envs
+ * new Kernel method: minfra_cli which is the CliStarter Object
+
 # 1.13.3
  * BUG: fixing 'labelÄ
 # 1.13.2

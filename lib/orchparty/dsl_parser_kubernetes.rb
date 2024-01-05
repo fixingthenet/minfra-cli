@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'pathname'
 require 'securerandom'
 module Orchparty
@@ -19,22 +21,21 @@ module Orchparty
 
     class Builder
       def self.build(*args, block)
-        builder = self.new(*args)
+        builder = new(*args)
         builder.instance_eval(&block) if block
         builder._build
       end
 
       def assign_or_merge(node, key, value)
-        if node[key]
-          node[key] = node[key].deep_merge_concat(value)
-        else
-          node[key] = value
-        end
+        node[key] = if node[key]
+                      node[key].deep_merge_concat(value)
+                    else
+                      value
+                    end
       end
     end
 
     class RootBuilder < Builder
-
       def initialize
         @root = AST.root
       end
@@ -63,15 +64,14 @@ module Orchparty
     end
 
     class MixinBuilder < Builder
-
       def initialize(name)
-        @mixin = AST.mixin(name: name)
+        @mixin = AST.mixin(name:)
       end
 
       def template(path)
-        chart_name = "_mixin_temp_name"
+        chart_name = '_mixin_temp_name'
         unless @mixin.services[chart_name]
-          @mixin.services[chart_name] = AST.chart(name: chart_name, _type: "chart" )
+          @mixin.services[chart_name] = AST.chart(name: chart_name, _type: 'chart')
           @mixin._service_order << chart_name
         end
         chart = @mixin.services[chart_name]
@@ -80,15 +80,14 @@ module Orchparty
       end
 
       def service(name, &block)
-
-        chart_name = "_mixin_temp_name"
+        chart_name = '_mixin_temp_name'
         unless @mixin.services[chart_name]
-          @mixin.services[chart_name] = AST.chart(name: chart_name, _type: "chart" )
+          @mixin.services[chart_name] = AST.chart(name: chart_name, _type: 'chart')
           @mixin._service_order << chart_name
         end
         chart = @mixin.services[chart_name]
 
-        result = ServiceBuilder.build(name, "chart-service", block)
+        result = ServiceBuilder.build(name, 'chart-service', block)
 
         name = "chart-#{chart.name}-#{name}"
         @mixin.services[name] = result
@@ -98,15 +97,14 @@ module Orchparty
       end
 
       def helm(name, &block)
-        result = ServiceBuilder.build(name, "helm", block)
+        result = ServiceBuilder.build(name, 'helm', block)
         @mixin.services[name] = result
         @mixin._mixins[name] = result
         self
       end
 
-
       def apply(name, &block)
-        result = ServiceBuilder.build(name, "apply", block)
+        result = ServiceBuilder.build(name, 'apply', block)
         @mixin.services[name] = result
         @mixin._mixins[name] = result
         self
@@ -130,9 +128,8 @@ module Orchparty
     end
 
     class ApplicationBuilder < Builder
-
       def initialize(name)
-        @application = AST.application(name: name)
+        @application = AST.application(name:)
       end
 
       def mix(name)
@@ -160,7 +157,7 @@ module Orchparty
       end
 
       def helm(name, &block)
-        result = ServiceBuilder.build(name, "helm", block)
+        result = ServiceBuilder.build(name, 'helm', block)
         @application.services[name] = result
         @application._service_order << name
         self
@@ -168,37 +165,36 @@ module Orchparty
 
       def label(&block)
         name = SecureRandom.hex
-        result = ServiceWithoutNameBuilder.build("label", block)
+        result = ServiceWithoutNameBuilder.build('label', block)
         @application.services[name] = result
         @application._service_order << name
         self
       end
 
       def apply(name, &block)
-        result = ServiceBuilder.build(name, "apply", block)
+        result = ServiceBuilder.build(name, 'apply', block)
         @application.services[name] = result
         @application._service_order << name
         self
       end
 
       def secret_generic(name, &block)
-        result = ServiceBuilder.build(name, "secret_generic", block)
+        result = ServiceBuilder.build(name, 'secret_generic', block)
         @application.services[name] = result
         @application._service_order << name
         self
       end
 
-
       def wait(&block)
         name = SecureRandom.hex
-        result = ServiceBuilder.build(name, "wait", block)
+        result = ServiceBuilder.build(name, 'wait', block)
         @application.services[name] = result
         @application._service_order << name
         self
       end
 
       def chart(name, &block)
-        @application.services[name] = ChartBuilder.build(name, @application, "chart", block)
+        @application.services[name] = ChartBuilder.build(name, @application, 'chart', block)
         @application._service_order << name
         self
       end
@@ -206,7 +202,7 @@ module Orchparty
       def template(path)
         chart_name = @application.name
         unless @application.services[chart_name]
-          @application.services[chart_name] = AST.chart(name: chart_name, _type: "chart" )
+          @application.services[chart_name] = AST.chart(name: chart_name, _type: 'chart')
           @application._service_order << chart_name
         end
         chart = @application.services[chart_name]
@@ -217,12 +213,12 @@ module Orchparty
       def service(name, &block)
         chart_name = @application.name
         unless @application.services[chart_name]
-          @application.services[chart_name] = AST.chart(name: chart_name, _type: "chart" )
+          @application.services[chart_name] = AST.chart(name: chart_name, _type: 'chart')
           @application._service_order << chart_name
         end
         chart = @application.services[chart_name]
 
-        result = ServiceBuilder.build(name, "chart-service", block)
+        result = ServiceBuilder.build(name, 'chart-service', block)
 
         name = "chart-#{chart.name}-#{name}"
         @application.services[name] = result
@@ -237,7 +233,6 @@ module Orchparty
     end
 
     class HashBuilder < Builder
-
       def method_missing(_, *values, &block)
         if block_given?
           value = HashBuilder.build(block)
@@ -255,11 +250,11 @@ module Orchparty
             key, value = value.first
             begin
               @hash[key.to_sym] = value
-            rescue 
+            rescue StandardError
               warn "Problem with key: #{key} #{value}"
-              raise 
-            end 
-             
+              raise
+            end
+
           else
             @hash ||= AST.array
             @hash << value
@@ -280,7 +275,6 @@ module Orchparty
     end
 
     class CommonBuilder < Builder
-
       def initialize(node)
         @node = node
       end
@@ -291,7 +285,7 @@ module Orchparty
 
       def method_missing(name, *values, &block)
         if block_given?
-          assign_or_merge(@node, name,  HashBuilder.build(block))
+          assign_or_merge(@node, name, HashBuilder.build(block))
         else
           assign_or_merge(@node, name, values.first)
         end
@@ -321,16 +315,14 @@ module Orchparty
     end
 
     class ServiceWithoutNameBuilder < CommonBuilder
-
-      def initialize( type)
+      def initialize(type)
         super AST.service(_type: type)
       end
     end
 
     class ServiceBuilder < CommonBuilder
-
       def initialize(name, type)
-        super AST.service(name: name, _type: type)
+        super AST.service(name:, _type: type)
         @node.files = {}
       end
 
@@ -344,32 +336,31 @@ module Orchparty
 
       def file(name, volume, &block)
         result = FileBuilder.build(name, volume, block)
-        @node.files[name]=result
+        @node.files[name] = result
         self
       end
     end
 
     class FileBuilder < CommonBuilder
       def initialize(name, volume)
-        super AST.service(filename: name, volume: volume)
+        super AST.service(filename: name, volume:)
       end
     end
 
     class ServiceMixinBuilder < CommonBuilder
-
       def initialize(name)
-        super AST.service(name: name)
+        super AST.service(name:)
       end
     end
 
     class ChartBuilder < CommonBuilder
       def initialize(name, application, type)
-        super AST.chart(name: name, _type: type )
+        super AST.chart(name:, _type: type)
         @application = application
       end
 
       def service(name, &block)
-        result = ServiceBuilder.build(name, "chart-service", block)
+        result = ServiceBuilder.build(name, 'chart-service', block)
 
         name = "chart-#{@node.name}-#{name}"
         @application.services[name] = result
@@ -390,15 +381,15 @@ module Orchparty
       def secrets(name, deploy: :helm, &block)
         case deploy
         when :helm
-        result =  ServiceBuilder.build(name, "chart-secret", block)
-        @application.services[name] = result
-        @application._service_order << name
-        @node._services << name
-        self
+          result = ServiceBuilder.build(name, 'chart-secret', block)
+          @application.services[name] = result
+          @application._service_order << name
+          @node._services << name
+          self
         when :apply
-          result = ServiceBuilder.build(name, "apply", block)
+          result = ServiceBuilder.build(name, 'apply', block)
           file = Tempfile.create(name)
-          result.tmp_file=file.path
+          result.tmp_file = file.path
           file.puts "apiVersion: v1\nkind: Secret\nmetadata:\n  name: #{name}\ntype: Opaque\ndata:"
           result._.each do |key, value|
             file.puts "  #{key}: #{Base64.strict_encode64(value.respond_to?(:call) ? value.call : value)}"
@@ -407,12 +398,11 @@ module Orchparty
           @application.services[name] = result
           @application._service_order << name
         when :none
-          
+
         else
           raise "unknown secret type: #{type}, known tpyes: [helm, apply]"
         end
       end
-      
     end
   end
 end

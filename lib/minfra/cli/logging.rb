@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Minfra
   module Cli
     module Logging
@@ -7,7 +9,7 @@ module Minfra
 
       def exit_error(str)
         error str
-        exit 1
+        raise Minfra::Cli::Errors::ExitError, str
       end
 
       def info(str)
@@ -25,7 +27,9 @@ module Minfra
       def deprecated(comment)
         logger.warn "DEPRECATED: #{comment}"
       end
+
       private
+
       def logger
         Minfra::Cli.logger
       end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'project/branch'
 require_relative 'project/tag'
 
@@ -11,19 +13,23 @@ module Minfra
         attr_reader :app_dir
 
         def initialize(app_dir)
-          @app_dir=app_dir
-          @project_file_path=app_dir.join('project.json')
-          @info=Hashie::Mash.new(JSON.parse(File.read(@project_file_path)))
+          @app_dir = app_dir
+          @project_file_path = app_dir.join('project.json')
+          @info = Hashie::Mash.new(JSON.parse(File.read(@project_file_path)))
         end
+
         def repo_name
           "#{docker.repo}/#{docker.name}"
         end
+
         def name
           @info['project']
         end
+
         def method_missing(method)
           @info.send(method)
         end
+
         def inspect
           @info.inspect
         end
@@ -35,7 +41,7 @@ module Minfra
       desc 'tag', 'manage tags'
       subcommand 'tag', Tag
 
-      desc "test", 'run tests'
+      desc 'test', 'run tests'
       def test
         ARGV.delete('project') # ARGV is passed along to `rspec` call
         ARGV.delete('test')
@@ -51,63 +57,57 @@ module Minfra
         end
       end
 
-      desc "build","build a local build"
-      option "noload", aliases: ['-n']
-      option "target", aliases: ['-t'] 
+      desc 'build', 'build a local build'
+      option 'noload', aliases: ['-n']
+      option 'target', aliases: ['-t']
       def build
-        p=ProjectInfo.load(Pathname.pwd)
+        p = ProjectInfo.load(Pathname.pwd)
         run_pre_repo
-        if options[:target]
-          target = options[:target]
-        else
-          target = p.docker.dev_target
-        end
-          
-        cmd = %{docker build #{"--target #{target}" if target} -t #{p.repo_name}:latest #{p.app_dir}}
+        target = options[:target] || p.docker.dev_target
+
+        cmd = %(docker build #{"--target #{target}" if target} -t #{p.repo_name}:latest #{p.app_dir})
         res = Runner.run(cmd)
         exit(1) if res.error?
-        
-        unless options[:noload]
-          debug("loading image into KIND's registry")
-          Runner.run(%{kind load docker-image #{p.repo_name}:latest --name #{minfra_config.name}})
-        end  
+
+        return if options[:noload]
+
+        debug("loading image into KIND's registry")
+        Runner.run(%(kind load docker-image #{p.repo_name}:latest --name #{minfra_config.name}))
       end
 
-      desc "exec","execute a command (bash is default in the container)"
-      def exec(cmd='/bin/bash')
-        p=ProjectInfo.load(Pathname.pwd)
+      desc 'exec', 'execute a command (bash is default in the container)'
+      def exec(cmd = '/bin/bash')
+        p = ProjectInfo.load(Pathname.pwd)
         run_pre_repo
-        Kernel.exec(%{docker run -ti --rm  #{p.exec_params} -v #{p.app_dir}:/code #{p.repo_name}:latest #{cmd}})
+        Kernel.exec(%(docker run -ti --rm  #{p.exec_params} -v #{p.app_dir}:/code #{p.repo_name}:latest #{cmd}))
       end
 
-      desc "push", "push directly to the repo"
+      desc 'push', 'push directly to the repo'
       option 'tag', aliases: ['-t']
       option 'registry', aliases: ['-r']
       def push
         tag = options[:tag] || `date +%Y%m%d%H%M`
-        p=ProjectInfo.load(Pathname.pwd)
+        p = ProjectInfo.load(Pathname.pwd)
 
         repo_name = if options[:registry]
-            "#{options[:registry]}/#{p.repo_name}"
-          else
-            p.repo_name
-          end
-          
-        Runner.run(%{docker build -t #{p.repo_name}:latest #{p.app_dir}})
-#        Runner.run(%{docker push #{p.repo_name}})
-        Runner.run(%{docker tag #{p.repo_name}:latest #{repo_name}:#{tag}})
-        Runner.run(%{docker push #{repo_name}:#{tag}})
+                      "#{options[:registry]}/#{p.repo_name}"
+                    else
+                      p.repo_name
+                    end
+
+        Runner.run(%(docker build -t #{p.repo_name}:latest #{p.app_dir}))
+        #        Runner.run(%{docker push #{p.repo_name}})
+        Runner.run(%(docker tag #{p.repo_name}:latest #{repo_name}:#{tag}))
+        Runner.run(%(docker push #{repo_name}:#{tag}))
       end
 
-
-
       private
+
       def run_pre_repo
-        Runner.run(%{#{minfra_config.base_path.join('hooks','pre_repo.sh')}})
+        Runner.run(minfra_config.base_path.join('hooks', 'pre_repo.sh').to_s)
       end
     end
   end
 end
 
-
-Minfra::Cli.register("project", "dealing wit projects", Minfra::Cli::Project)
+Minfra::Cli.register('project', 'dealing wit projects', Minfra::Cli::Project)

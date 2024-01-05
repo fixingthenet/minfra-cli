@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orchparty
   module Transformations
     class Mixin
@@ -15,26 +17,24 @@ module Orchparty
       end
 
       def resolve_chart_name(mixin, application)
-#            warn "ERROR: #{mixin} #{application}"
-            if mixin.services[:_mixin_temp_name]
-              mixin.services[application.name.to_s] = mixin.services.delete("_mixin_temp_name")
-              mixin.services[application.name.to_s][:name] = application.name.to_s
-              mixin._service_order.delete("_mixin_temp_name")
-              mixin._service_order << application.name.to_s
-            end
-            mixin
+        #            warn "ERROR: #{mixin} #{application}"
+        if mixin.services[:_mixin_temp_name]
+          mixin.services[application.name.to_s] = mixin.services.delete('_mixin_temp_name')
+          mixin.services[application.name.to_s][:name] = application.name.to_s
+          mixin._service_order.delete('_mixin_temp_name')
+          mixin._service_order << application.name.to_s
+        end
+        mixin
       end
 
       def transform_application(application, ast)
         application.services = application.services.transform_values! do |service|
           current = AST.service
           service.delete(:_mix).compact.each do |mix|
-            begin
             current = current.deep_merge_concat(resolve_mixin(mix, application, ast))
-            rescue
-              warn "problems with #{mix}"
-              raise
-            end  
+          rescue StandardError
+            warn "problems with #{mix}"
+            raise
           end
           current.deep_merge_concat(service)
         end
@@ -42,17 +42,17 @@ module Orchparty
       end
 
       def resolve_mixin(mix, application, ast)
-        mixin = if mix.include? "."
-          mixin_name, mixin_service_name = mix.split(".")
-          if ast._mixins[mixin_name]
-            ast._mixins[mixin_name]._mixins[mixin_service_name]
-          else
-            warn "ERROR: Could not find mixin '#{mixin_name}'."
-            exit 1
-          end
-        else
-          application._mixins[mix]
-        end
+        mixin = if mix.include? '.'
+                  mixin_name, mixin_service_name = mix.split('.')
+                  if ast._mixins[mixin_name]
+                    ast._mixins[mixin_name]._mixins[mixin_service_name]
+                  else
+                    warn "ERROR: Could not find mixin '#{mixin_name}'."
+                    exit 1
+                  end
+                else
+                  application._mixins[mix]
+                end
         if mixin.nil?
           warn "ERROR: Could not find mixin '#{mix}'."
           exit 1

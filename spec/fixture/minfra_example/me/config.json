@@ -1,8 +1,6 @@
 {
   "top_level": "okok",
-  "environments": {
-    "dev": { "one": 1,
-             "two": "<%= '2' %>" } 
-  }
+  "two": "<%= '2' %>"
+
 }
 

@@ -1,0 +1,16 @@
+---
+:defaults:
+
+:backends:
+- eyaml
+
+:eyaml:
+  :datadir: "%{hieraroot}/hieradata"
+  gpg_gnupghome: "/home/dev/.gnupg/"
+
+# :merge_behavour: deeper
+# :deep_merge_options: deep
+
+:hierarchy:
+# environment and clusters
+- "environments/%{env}"

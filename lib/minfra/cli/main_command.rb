@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 module Minfra
   module Cli
     class Main < Command
-
       desc 'kube', 'kubectl wrapper and other features'
       option :cluster
       option :stack, required: true

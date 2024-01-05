@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'hashie'
 
 module Orchparty
@@ -13,14 +15,12 @@ module Orchparty
         binding
       end
 
-      def inspect(indent=0)
-        start="\n"
+      def inspect(indent = 0)
+        start = "\n"
         each_pair do |name, ast|
-          begin
-            start << "#{'  ' * indent}#{name}: #{ast.inspect(indent+1)}\n"
-          rescue ArgumentError
-            start << "#{'  ' * indent}#{name}: #{ast.inspect}\n"
-          end  
+          start << "#{'  ' * indent}#{name}: #{ast.inspect(indent + 1)}\n"
+        rescue ArgumentError
+          start << "#{'  ' * indent}#{name}: #{ast.inspect}\n"
         end
         start
       end
@@ -39,28 +39,27 @@ module Orchparty
     end
 
     def self.mixin(args = {})
-      Node.new({services: {}, _mixins: {}, volumes: {}, _variables: {}, networks: {}, _service_order: []}).merge(args)
+      Node.new({ services: {}, _mixins: {}, volumes: {}, _variables: {}, networks: {}, _service_order: [] }).merge(args)
     end
 
     def self.application(args = {})
-      Node.new({services: {}, _mixins: {}, _mix:[], volumes: {}, _variables: {}, networks: {}, _service_order: []}).merge(args)
+      Node.new({ services: {}, _mixins: {}, _mix: [], volumes: {}, _variables: {}, networks: {}, _service_order: [] }).merge(args)
     end
 
     def self.all(args = {})
-      Node.new(_mix:[], _variables: {}).merge(args)
+      Node.new(_mix: [], _variables: {}).merge(args)
     end
 
     def self.application_mixin(args = {})
-      Node.new(_mix:[], _variables: {}).merge(args)
+      Node.new(_mix: [], _variables: {}).merge(args)
     end
 
     def self.service(args = {})
-      Node.new(_mix:[], _variables: {}).merge(args)
+      Node.new(_mix: [], _variables: {}).merge(args)
     end
 
     def self.chart(args = {})
-      Node.new(_mix:[], _variables: {}, _services: []).merge(args)
+      Node.new(_mix: [], _variables: {}, _services: []).merge(args)
     end
-
   end
 end

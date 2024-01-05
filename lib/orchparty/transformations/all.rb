@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Orchparty
   module Transformations
     class All
@@ -5,7 +7,7 @@ module Orchparty
         ast.applications.each do |_, application|
           application.services.transform_values! do |service|
             if application.all.is_a?(Hash)
-              AST.service(application.all.deep_merge_concat(service)) 
+              AST.service(application.all.deep_merge_concat(service))
             else
               service
             end
