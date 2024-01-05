@@ -49,6 +49,10 @@ module Minfra
         kube.destroy_dev_cluster
       end
 
+      desc 'envs', 'list all environments'
+      def envs
+        puts minfra_cli.envs.keys.join(', ')
+      end
       private
 
       def kube
