@@ -5,6 +5,7 @@
  * config: NO support for "environment" specific overrides in configs, use hiera
  * support for argv_file to run commands from a file
  * tests: more of them
+ * new command: dev envs
 # 1.13.3
  * BUG: fixing 'labelÄ
 # 1.13.2
