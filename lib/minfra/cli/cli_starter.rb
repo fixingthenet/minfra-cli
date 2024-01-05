@@ -71,11 +71,11 @@ module Minfra
         Kernel.define_method(:minfra_cli) do
           cli
         end
-        Kernel.define_method(:l) do |key, value = nil|
-          minfra_cli.hiera.l(key, value)
+        Kernel.define_method(:l) do |key, default = nil|
+          minfra_cli.hiera.l(key, default)
         end
-        Kernel.define_method(:l!) do |key, value = nil|
-          minfra_cli.hiera.l!(key, value)
+        Kernel.define_method(:l!) do |key, default = nil|
+          minfra_cli.hiera.l!(key, default)
         end
       end
       private

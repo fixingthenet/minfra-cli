@@ -62,7 +62,7 @@ describe Minfra::Cli do
     end
     
     it 'looks up with defaults' do
-      expect( main.env.l('fun', [])).to eq([])
+      expect( main.env.l('env.more_fun', [])).to eq([])
     end
     
     it 'runs commands from a file'

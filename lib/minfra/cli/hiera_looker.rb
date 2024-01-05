@@ -24,6 +24,7 @@ module Minfra
       end
 
       def l(value, default = nil)
+#        debugger if @env_name == 'production-management' && value == 'env.tags'
         return @cache[value] if @cache.key?(value)
 
         values = value.split('.')
@@ -36,13 +37,13 @@ module Minfra
                       end
         result = @hiera.lookup(fst_value, default, @scope, nil, lookup_type)
         result = result.dig(*values) if !values.empty? && result.is_a?(Hash) # we return nil or the scalar value and only drill down on hashes
-
+        result = default if result.nil?
         result = Hashie::Mash.new(result) if result.is_a?(Hash)
         @cache[value] = result
         result
       end
 
-      def l!(value, default)
+      def l!(value, default = nil)
         v = l(value, default)
         raise("Value not found! #{value}") if v.nil?
         v
