@@ -61,6 +61,10 @@ describe Minfra::Cli do
       expect(main.envs['dev'].l('env.name')).to eq('dev')
     end
     
+    it 'looks up with defaults' do
+      expect( main.env.l('fun', [])).to eq([])
+    end
+    
     it 'runs commands from a file'
   end
 end
