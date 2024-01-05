@@ -6,6 +6,7 @@ require 'json'
 require 'ostruct'
 require 'hiera'
 
+require_relative 'cli/core_ext'
 require_relative 'cli/errors'
 require_relative 'cli/logging'
 require_relative 'cli/templater'
