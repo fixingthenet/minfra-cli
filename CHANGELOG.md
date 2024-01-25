@@ -1,3 +1,7 @@
+# 2.1.0
+ * add :all hook
+ * fixing setup dev
+ * colored errors
 # 2.0.1
  Refactorings
  * installing into Kernel only when 'exec' not at 'init' time

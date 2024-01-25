@@ -18,8 +18,6 @@ module Minfra
       def setup_config
         config = Minfra::Cli.config
         ensure_path_and_template(config.config_path, config.base_path.join('config', 'me_config.json.erb'))
-        config.init!
-        config.load('dev')
       end
 
       def ensure_path_and_template(dest_path, template_path, params = {})
