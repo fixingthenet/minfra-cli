@@ -17,7 +17,7 @@
  * new Kernel method: minfra_cli which is the CliStarter Object
 
 # 1.13.3
- * BUG: fixing 'labelÄ
+ * BUG: fixing 'label'
 # 1.13.2
  * BUG: fixing 'generic_secret'
 # 1.13.1

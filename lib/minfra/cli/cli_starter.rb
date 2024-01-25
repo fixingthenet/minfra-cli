@@ -31,6 +31,7 @@ module Minfra
 
         init_minfrarc
         init_envs
+        
         init_hiera
         init_plugins
 
@@ -140,7 +141,7 @@ module Minfra
       end
 
       def init_hiera
-        @hiera = @env.hiera
+        @hiera = @env.hiera 
       end
       
       def init_envs
