@@ -13,14 +13,16 @@ module Minfra
 
         attr_reader :stdout_lines
 
-        def initialize
+        def initialize(on_output: nil)
           @stderr_lines = []
           @stdout_lines = []
           @status = nil
+          @on_output = on_output
         end
 
         def add(line, stream = :stdout)
           line.chomp!
+          @on_output.call(line, stream) if @on_output
           if stream == :stdout
             @stdout_lines << line
             debug line
@@ -60,23 +62,25 @@ module Minfra
         new(cmd, **args).run
       end
 
-      attr_reader :exit_on_error, :runner, :cmd
+      attr_reader :exit_on_error, :runner, :cmd, :on_output
 
-      def initialize(cmd, exit_on_error: true, runner: :popen)
+      def initialize(cmd, exit_on_error: true, runner: :popen, on_output: nil)
         @cmd = cmd
         @exit_on_error = exit_on_error
         @runner = runner
+        @on_output = on_output
       end
 
       def run
         debug("running (#{@runner}): #{@cmd}")
-        res = case @runner
+        res = Result.new(on_output:)
+        case @runner
               when :system
-                run_system(Result.new)
+                run_system(res)
               when :popen
-                run_threaded(Result.new)
+                run_threaded(res)
               when :exec
-                run_exec(Result.new)
+                run_exec(res)
               else
                 raise "unknown runner #{@runner}"
               end
