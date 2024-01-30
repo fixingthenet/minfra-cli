@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'English'
 module Minfra
   module Cli
     class HieraLooker
@@ -41,8 +42,14 @@ module Minfra
         begin
           result = @hiera.lookup(fst_value, default, @scope, nil, lookup_type)
         rescue GPGME::Error::NoSecretKey
-          error("Can't decrypt your hiera key: #{value}")
-          raise ExitError
+          error("Have no gpg configuration to decrypt your hiera key: #{value}")
+          raise Errors::ExitError
+        rescue GPGME::Error::BadPassphrase
+          error("Your password was wrong for hiera key: #{value}")
+          raise Errors::ExitError
+        rescue GPGME::Error
+          error("Having decrypt problems for hiera key: #{value}, #{$ERROR_INFO.message}")
+          raise Errors::ExitError
         end
         result = result.dig(*values) if !values.empty? && result.is_a?(Hash) # we return nil or the scalar value and only drill down on hashes
         result = default if result.nil?
