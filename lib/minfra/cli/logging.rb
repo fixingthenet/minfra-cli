@@ -13,11 +13,11 @@ module Minfra
       end
 
       def info(str)
-        logger.warn str
+        logger.info str
       end
 
       def warn(str)
-        logger.info(colored(str, :yellow))
+        logger.warn(colored(str, :yellow))
       end
 
       def debug(str)
