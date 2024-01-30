@@ -16,7 +16,7 @@ Is a KIND (k8s in docker) based development environment.
 |   |                      | minfra.hiera.env_path |                                              |   |
 |   |                      | default_stacks        |                                              | env.stacks or  env.roles   |
 |   |                      |                       |                  | infra::allow_insecure_k8s_connections |
-|   | MINFRA_DEBUG_HIERA_LOOKUPS | | | |
+| when set to 'true' all hiera lookups are logged on debug level  | MINFRA_DEBUG_HIERA_LOOKUPS | | | |
 
 
 ## Expected hiera data

@@ -2,8 +2,8 @@
  * add :all hook
  * fixing setup dev
  * colored errors
- * better raising hiera lookup errors
- * adding HIERA_DEBUG_LOOKUPS
+ * wrapping hiera lookup errors of gpg
+ * adding HIERA_DEBUG_LOOKUPS=true
 # 2.0.1
  Refactorings
  * installing into Kernel only when 'exec' not at 'init' time
