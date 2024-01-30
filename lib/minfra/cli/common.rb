@@ -25,14 +25,6 @@ module Minfra
         end
       end
 
-      def parse_cmd(cmd, silence: false)
-        reply = JSON.parse(run_cmd(cmd, silence:))
-      rescue JSON::ParserError, TypeError
-        error "ERROR: #{$ERROR_INFO.message}"
-        error reply
-        error "command was: #{cmd}"
-        exit 1
-      end
     end
   end
 end
