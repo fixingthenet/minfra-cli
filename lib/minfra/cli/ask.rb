@@ -18,6 +18,7 @@ module Minfra
       end
 
       def self.text(question, default = nil)
+        answer = nil
         loop do
           message = format('%s%s: ', question, default && " (#{default})")
           $stdout.write message

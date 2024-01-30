@@ -1,3 +1,9 @@
+# 2.1.0
+ * add :all hook
+ * fixing setup dev
+ * colored errors
+ * wrapping hiera lookup errors of gpg
+ * adding HIERA_DEBUG_LOOKUPS=true
 # 2.0.1
  Refactorings
  * installing into Kernel only when 'exec' not at 'init' time
@@ -17,7 +23,7 @@
  * new Kernel method: minfra_cli which is the CliStarter Object
 
 # 1.13.3
- * BUG: fixing 'labelÄ
+ * BUG: fixing 'label'
 # 1.13.2
  * BUG: fixing 'generic_secret'
 # 1.13.1

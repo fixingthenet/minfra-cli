@@ -31,6 +31,7 @@ module Minfra
 
         init_minfrarc
         init_envs
+        
         init_hiera
         init_plugins
 
@@ -140,7 +141,7 @@ module Minfra
       end
 
       def init_hiera
-        @hiera = @env.hiera
+        @hiera = @env.hiera 
       end
       
       def init_envs
@@ -149,7 +150,7 @@ module Minfra
         root = base_path.join('hiera')
         root.join('hieradata',env_path).glob('*.eyaml').sort.each do |path|
           env_name = path.basename.sub(/(\..+)/,'').to_s
-          @envs[env_name]=Env.new(hiera_root: root, hiera_env_path: env_path, name: env_name)
+          @envs[env_name]=Env.new(hiera_root: root, hiera_env_path: env_path, name: env_name, hiera_debug_lookups: ENV['MINFRA_DEBUG_HIERA_LOOKUPS'] == 'true')
         end
         @env = @envs[@env_name] # set the current env
       end

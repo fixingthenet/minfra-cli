@@ -12,9 +12,12 @@ class Thor
       elsif public_method?(instance)
         hooks = instance.instance_variable_get(:@_invocations).values.flatten
         arity = instance.method(name).arity
+        Minfra::Cli.call_before_hooks(instance, ['all']) if hooks.size == 1
         Minfra::Cli.call_before_hooks(instance, hooks)
+#        debugger
         instance.__send__(name, *args)
         Minfra::Cli.call_after_hooks(instance, hooks)
+        Minfra::Cli.call_after_hooks(instance, ['all']) if hooks.size == 1
       elsif local_method?(instance, :method_missing)
         # Minfra::Cli.call_before_hooks(instance,hooks)
         instance.__send__(:method_missing, name.to_sym, *args)
@@ -77,6 +80,7 @@ module Minfra
         end
 
         def call_after_hooks(obj, names)
+#          debug("Checking after hook #{names}")
           @hooks.select { |h| h.match?(:after, names) }.each do |h|
             debug("Hook  after: #{names.join(',')}")
             h.exec(obj)

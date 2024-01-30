@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'erb'
-
 module Minfra
   module Cli
     # not threadsafe!
@@ -30,14 +29,15 @@ module Minfra
 
         source.glob('**/*') do |filename|
           rel_path = filename.relative_path_from(source)
-
           if File.directory?(filename) # check if it s  file and extension is not .tf
             FileUtils.mkdir_p("#{destination}/#{rel_path}")
           elsif extensions.include?(File.extname(filename)) # a file
+#            puts("templating: #{filename}")
             content = File.read(filename)
             modified_content = Minfra::Cli::Templater.render(content, {})
             File.write("#{destination}/#{rel_path}", modified_content)
           else
+#            puts("copying  : #{filename}")
             FileUtils.cp(filename, destination.join(rel_path))
           end
         end
