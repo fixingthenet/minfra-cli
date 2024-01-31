@@ -35,7 +35,7 @@ module Minfra
       def deploy(stack_name, message = '')
         stacks = l('env.roles') || l('env.stacks') || []
         default_stacks = minfra_config.project.default_stacks || []
-        stacks = stacks.concat(default_stacks)
+        stacks = stacks + default_stacks
         if stacks.include?(stack_name) || options[:force] || options[:test]
           kube.deploy(stack_name, message)
         else

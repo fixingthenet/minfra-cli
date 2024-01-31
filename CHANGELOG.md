@@ -1,3 +1,5 @@
+# 2.x.x
+ * fixing: should not modify l('env.roles')
 # 2.1.0
  * add :all hook
  * fixing setup dev
