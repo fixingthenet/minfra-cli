@@ -36,5 +36,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "hiera", "3.9.0"
   spec.add_runtime_dependency "hiera-eyaml", "3.3.0"
   spec.add_runtime_dependency "hiera-eyaml-gpg", "0.7.4"
+  spec.add_runtime_dependency "gpgme", "~>2.0.0"
 end
 
