@@ -101,7 +101,7 @@ module Minfra
         run(%(docker network rm #{kind_name}), exit_on_error: false)
       end
 
-      def deploy(stack_name, reason_message)
+      def deploy(stack_name, _reason_message)
         # TBD: options is global, avoid it!
 
         test = options[:test]
