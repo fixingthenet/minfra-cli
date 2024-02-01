@@ -39,6 +39,7 @@ module Minfra
                       else
                         :deep
                       end
+        retry_attempts = 0
         begin
           result = @hiera.lookup(fst_value, default, @scope, nil, lookup_type)
         rescue GPGME::Error::NoSecretKey
@@ -50,6 +51,10 @@ module Minfra
         rescue GPGME::Error
           error("Having decrypt problems for hiera key: #{value}, #{$ERROR_INFO.message}")
           raise Errors::ExitError
+        rescue Errno::ENOMEM # see https://github.com/ueno/ruby-gpgme/issues/147
+          retry_attempts += 1
+          sleep 1
+          retry if retry_attempts < 5
         end
         result = result.dig(*values) if !values.empty? && result.is_a?(Hash) # we return nil or the scalar value and only drill down on hashes
         result = default if result.nil?
