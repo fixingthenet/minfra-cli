@@ -188,7 +188,7 @@ module Orchparty
 
       def print_install
         build_chart do |chart_path|
-          cmd = "helm template --namespace #{namespace} --debug --kube-context #{cluster_name} --output-dir #{chart_path.join(
+          cmd = "helm template --namespace #{namespace} --kube-context #{cluster_name} --output-dir #{chart_path.join(
             '..', 'helm_expanded'
           )}   #{service.name} #{chart_path}"
           @out_io.puts `$cmd`
