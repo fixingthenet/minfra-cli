@@ -1,5 +1,9 @@
 # 2.x.x
  * fixing: should not modify l('env.roles')
+ * cleanup: removing template testing --debug flag, causing noise
+ * cleanup: removing Documentation hooks
+ * fixing: hiera lookup retrying on gpg memory error exceptions
+ * 
 # 2.1.0
  * add :all hook
  * fixing setup dev
