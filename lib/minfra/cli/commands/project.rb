@@ -47,9 +47,7 @@ module Minfra
         ARGV.delete('test')
 
         if File.exist?('./bin/run_tests')
-          # config = Config.load('staging')
           project = ProjectInfo.load(Pathname.pwd)
-          # Minfra::Cli::Document.document(config, "Using project specific ./bin/run_tests in #{project.name}")
           debug "Using project specific ./bin/run_tests in #{project.name}"
           system('./bin/run_tests', out: $stdout, err: :out)
         else

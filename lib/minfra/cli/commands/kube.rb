@@ -101,7 +101,7 @@ module Minfra
         run(%(docker network rm #{kind_name}), exit_on_error: false)
       end
 
-      def deploy(stack_name, reason_message)
+      def deploy(stack_name, _reason_message)
         # TBD: options is global, avoid it!
 
         test = options[:test]
@@ -145,8 +145,6 @@ module Minfra
 
         exit_error('Deployment aborted!') if !(@config.dev? || options[:force] == true) && !Ask.boolean('Are the changes ok?')
 
-        message = "deploying stack #{stack.name}: #{reason_message}."
-        Minfra::Cli::Document.document(@config, "started #{message}")
         orch = Orchparty::App.new(cluster_name: cluster,
                                   application_name: stack.name,
                                   force_variable_definition: false,
@@ -154,7 +152,6 @@ module Minfra
                                   status_dir: stack.release_path,
                                   options:)
         orch.send(method)
-        Minfra::Cli::Document.document(@config, "finished #{message}")
       end
 
       def rollback(stack_name, env, deployment, cluster)
