@@ -3,13 +3,13 @@
  * cleanup: removing template testing --debug flag, causing noise
  * cleanup: removing Documentation hooks
  * fixing: hiera lookup retrying on gpg memory error exceptions
- * 
+ * adding: gpgme dependency
 # 2.1.0
- * add :all hook
- * fixing setup dev
- * colored errors
- * wrapping hiera lookup errors of gpg
- * adding HIERA_DEBUG_LOOKUPS=true
+ * adding: :all hook
+ * fixing: setup dev
+ * adding: colored errors and warnings
+ * change: wrapping hiera lookup errors of gpg
+ * adding: HIERA_DEBUG_LOOKUPS=true
 # 2.0.1
  Refactorings
  * installing into Kernel only when 'exec' not at 'init' time
