@@ -1,4 +1,4 @@
-# 2.x.x
+# 2.2.0
  * fixing: should not modify l('env.roles')
  * cleanup: removing template testing --debug flag, causing noise
  * cleanup: removing Documentation hooks
