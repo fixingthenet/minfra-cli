@@ -1,3 +1,7 @@
+# 3.0.0
+ * change: debug output on template errors
+ Incompatibility
+ * change: used_vars are turned into true yaml types when creating the value file
 # 2.2.0
  * fixing: should not modify l('env.roles')
  * cleanup: removing template testing --debug flag, causing noise

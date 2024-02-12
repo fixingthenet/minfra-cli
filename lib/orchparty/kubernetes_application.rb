@@ -196,6 +196,7 @@ module Orchparty
 
             debug('Helm: template check: OK')
           else
+            system("#{cmd} --debug")
             error('Helm: template check: FAIL')
           end
         end
@@ -246,7 +247,19 @@ module Orchparty
               output_chart_path: output_chart_path
             )
             used_vars.each do |variable, value|
-              helm_values.puts "#{variable}: \"#{value}\""
+              if value.is_a?(Numeric) && value >= 1000000 # this is bad as conversion is done only in some cases
+                value = value.to_s # see https://github.com/helm/helm/issues/3001
+              end
+              yml = { variable => value}.to_yaml[4..-1]
+              yml = case
+                when yml.match(/!ruby\/object/)
+                  { variable => value.to_s}.to_yaml[4..-1]
+                when yml.match(/!ruby\/array:Hashie::Array/)
+                  { variable => value.to_a}.to_yaml[4..-1]
+                else
+                  yml  
+              end  
+              helm_values.write(yml)
             end
           end
         end
