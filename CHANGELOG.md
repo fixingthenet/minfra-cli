@@ -1,3 +1,5 @@
+# 3.0.1
+ * fixing: dubblequotes in helm values should be escaped
 # 3.0.0
  * change: debug output on template errors
  Incompatibility
