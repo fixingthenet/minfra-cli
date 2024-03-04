@@ -247,6 +247,7 @@ module Orchparty
               output_chart_path: output_chart_path
             )
             used_vars.each do |variable, value|
+              value = value.gsub('"','\"') if value.is_a?(String)
               if value.is_a?(Numeric) && value >= 1000000 # this is bad as conversion is done only in some cases
                 value = value.to_s # see https://github.com/helm/helm/issues/3001
               end
@@ -258,7 +259,7 @@ module Orchparty
                   { variable => value.to_a}.to_yaml[4..-1]
                 else
                   yml  
-              end  
+              end
               helm_values.write(yml)
             end
           end
