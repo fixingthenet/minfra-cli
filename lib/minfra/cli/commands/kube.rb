@@ -25,9 +25,7 @@ module Minfra
 
       def restart
         run %(docker start #{kind_name}-control-plane)
-        run %(docker exec  #{kind_name}-control-plane bash -c "sed -e '/nameserver 127.0.0.11/ s/^#*/#/'  /etc/resolv.conf | cat - >> /etc/resolv.conf")
-        run %(docker exec  #{kind_name}-control-plane bash -c "echo nameserver 8.8.8.8 >> /etc/resolv.conf")
-        run %(docker exec  #{kind_name}-control-plane bash -c "echo nameserver 8.8.4.4 >> /etc/resolv.conf")
+        set_kind_dns
       end
 
       def create
@@ -51,10 +49,9 @@ module Minfra
         run(%(KIND_EXPERIMENTAL_DOCKER_NETWORK=#{kind_name} kind create cluster --name "#{kind_name}" --config #{@config.kind_config_path}))
 
         info 'step: configuring kind'
-        run %(docker exec #{kind_name}-control-plane bash -c "sed -e '/nameserver 127.0.0.11/ s/^#*/#/'  /etc/resolv.conf | cat - >> /etc/resolv.conf")
-        run %(docker exec #{kind_name}-control-plane bash -c "echo nameserver 8.8.8.8 >> /etc/resolv.conf")
-        run %(docker exec #{kind_name}-control-plane bash -c "echo nameserver 8.8.4.4 >> /etc/resolv.conf")
-
+        
+        set_kind_dns
+        
         configs = [YAML.safe_load(File.read(kind_kube_path))]
 
         existing_config = YAML.safe_load(File.read(kube_config_path))
@@ -244,6 +241,11 @@ module Minfra
 
       private
 
+      def set_kind_dns
+        run %(docker exec #{kind_name}-control-plane bash -c "echo nameserver 8.8.8.8 > /etc/resolv.conf")
+        run %(docker exec #{kind_name}-control-plane bash -c "echo nameserver 8.8.4.4 >> /etc/resolv.conf")
+      end
+      
       def init(stack_name, _env, deployment, explicit_cluster)
         Minfra::Cli::StackM::KubeStackTemplate.new(stack_name,
                                                    config,
