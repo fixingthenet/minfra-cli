@@ -5,13 +5,20 @@ module Minfra
   module Cli
     class HieraLooker
       include Logging
-      def initialize(root:, env_name:, env_path:, debug_lookups: false)
+      def initialize(root:, env_name:, env_path:, debug_lookups: false, backends: nil)
         @root = Pathname.new(root)
         @env_name = env_name
         @cache = {}
 
         @hiera = Hiera.new(config: @root.join('hiera.yaml').to_s)
+        # now that hiera has loaded the backends let's patch 'em
+        require 'minfra/cli/hiera_yaml_backend_patch' if defined?(Hiera::Backend::Yaml_backend)
+        
         Hiera.logger = :noop
+        if backends && !backends.empty?
+          @hiera.config[:backends] = backends 
+          Hiera::Config.load_backends
+        end
 
         hiera_main_path = @root.join("hieradata/#{env_path}/#{env_name}.eyaml")
 

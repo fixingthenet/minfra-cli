@@ -1,3 +1,6 @@
+# 3.1.0
+ * overriding backends via MINFRA_HIERA_BACKENDS
+ * overriding Yaml Backend to allow :extension: setting
 # 3.0.2
  * removing complex dns manipulation and hardcoding google servers
 # 3.0.1
