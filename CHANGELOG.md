@@ -1,3 +1,5 @@
+# 4.0.0
+ * in apply mode of secrets we prefix the name with the chart name
 # 3.1.0
  * overriding backends via MINFRA_HIERA_BACKENDS
  * overriding Yaml Backend to allow :extension: setting

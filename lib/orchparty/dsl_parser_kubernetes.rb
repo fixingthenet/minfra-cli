@@ -390,7 +390,7 @@ module Orchparty
           result = ServiceBuilder.build(name, 'apply', block)
           file = Tempfile.create(name)
           result.tmp_file = file.path
-          file.puts "apiVersion: v1\nkind: Secret\nmetadata:\n  name: #{name}\ntype: Opaque\ndata:"
+          file.puts "apiVersion: v1\nkind: Secret\nmetadata:\n  name: #{@node.name}-#{name}\ntype: Opaque\ndata:"
           result._.each do |key, value|
             file.puts "  #{key}: #{Base64.strict_encode64(value.respond_to?(:call) ? value.call : value)}"
           end
