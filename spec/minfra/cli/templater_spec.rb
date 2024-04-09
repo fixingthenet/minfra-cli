@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'debug'
+
 RSpec.describe Minfra::Cli::Templater do
 
   let(:helper_dir) {
