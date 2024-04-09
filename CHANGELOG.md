@@ -1,3 +1,5 @@
+# 4.1.0
+ * Minfra::Cli::Templater can now user helper modules
 # 4.0.0
  * in apply mode of secrets we prefix the name with the chart name
 # 3.1.0
