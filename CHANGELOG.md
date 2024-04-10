@@ -1,10 +1,12 @@
+# 4.1.1
+ * fix: puts statement removed
 # 4.1.0
- * Minfra::Cli::Templater can now user helper modules
+ * improvement: Minfra::Cli::Templater can now user helper modules
 # 4.0.0
- * in apply mode of secrets we prefix the name with the chart name
+ * feature: in apply mode of secrets we prefix the name with the chart name
 # 3.1.0
- * overriding backends via MINFRA_HIERA_BACKENDS
- * overriding Yaml Backend to allow :extension: setting
+ * improvement: overriding backends via MINFRA_HIERA_BACKENDS
+ * improvement: overriding Yaml Backend to allow :extension: setting
 # 3.0.2
  * removing complex dns manipulation and hardcoding google servers
 # 3.0.1

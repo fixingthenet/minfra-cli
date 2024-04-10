@@ -20,7 +20,6 @@ module Minfra
            helpers.each do |helper|
              b.extend helper
            end
-           p b._binding.receiver
            result(b._binding)
          end
       end
