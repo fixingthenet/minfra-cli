@@ -24,7 +24,7 @@ module Minfra
          end
       end
       
-      def self.read(path, params: {}, fallback: nil)
+      def self.read(path, params: {}, helpers: [], fallback: nil)
         p = Pathname.new(path)
         if p.exist?
           content = File.read(path)
@@ -34,7 +34,7 @@ module Minfra
           content = fallback
 
         end
-        render(content, params)
+        render(content, params, helpers: )
       end
 
       def self.render(template, params, helpers: [])
