@@ -31,11 +31,10 @@ module Minfra
         node_scope = @hiera.lookup('env', {}, scope, nil, :deeper)
         @scope = scope.merge(node_scope)
         @debug_lookups = debug_lookups
+        debug("hiera: scope -> #{@scope}") if @debug_lookups
       end
 
       def l(value, default = nil)
-        debug "hiera: #{value}" if @debug_lookups
-        #        debugger if @env_name == 'production-management' && value == 'env.tags'
         return @cache[value] if @cache.key?(value)
 
         values = value.split('.')
@@ -67,6 +66,7 @@ module Minfra
         result = default if result.nil?
         result = Hashie::Mash.new(result) if result.is_a?(Hash)
         @cache[value] = result
+        debug "hiera: #{value} -> #{result.inspect}" if @debug_lookups
         result
       end
 

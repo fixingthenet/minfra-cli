@@ -1,3 +1,7 @@
+# 4.2.0
+ * --no-rc don't load rc files
+ * MINFRA_DEBUG_HIERA_LOOKUPS=true also shows the results of the lookup
+ * adding some needed hiera patches
 # 4.1.1
  * fix: puts statement removed
 # 4.1.0
@@ -26,7 +30,7 @@
  * fixing: setup dev
  * adding: colored errors and warnings
  * change: wrapping hiera lookup errors of gpg
- * adding: HIERA_DEBUG_LOOKUPS=true
+ * adding: MINFRA_DEBUG_HIERA_LOOKUPS=true
 # 2.0.1
  Refactorings
  * installing into Kernel only when 'exec' not at 'init' time

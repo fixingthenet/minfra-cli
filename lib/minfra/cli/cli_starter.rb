@@ -27,9 +27,9 @@ module Minfra
 
         init_logger
 
-        @logger.debug("Minfra: loglevel: #{@logger.level}, env: #{@config.orch_env}")
+        @logger.debug("Minfra: loglevel: #{@logger.level}, env: #{@config.orch_env}, options: #{@options.inspect}")
 
-        init_minfrarc
+        init_minfrarc unless @options[:norc]
         init_envs
         
         init_hiera
@@ -86,28 +86,23 @@ module Minfra
 
       # will parse -e, --argv_file, --
       def parse_global_options
-        @options = {}
-        if (idx = @argv.index('-e'))
-          @options[:env] = @argv[idx + 1]
-          @argv.delete_at(idx)
-          @argv.delete_at(idx)
-        end
-
-        if (idx = argv.index('--minfra_argv_file'))
-          @options[:argv_file] = @argv[idx + 1]
-          @argv.delete_at(idx)
-          @argv.delete_at(idx)
-        end
-
-        if (idx = argv.index('--minfra_path'))
-          @options[:base_path] = @argv[idx + 1]
-          @argv.delete_at(idx)
-          @argv.delete_at(idx)
-        end
-
-        @options
+        extract_option('-e', :env, 1)
+        extract_option('--minfra_argv_file', :argv_file, 1)
+        extract_option('--minfra_path', :base_path, 1)
+        extract_option('--no-rc', :norc)
       end
 
+      def extract_option(name, sym, arity=0)
+        if idx = @argv.index(name)
+          if arity == 0
+            @options[sym] = true
+          else
+            @options[sym] = @argv[idx + 1]
+            @argv.delete_at(idx)
+          end
+          @argv.delete_at(idx)
+        end
+      end
       def init_minfrarc
         # load minfrarc for configs
         project_minfrarc_path = @config.base_path.join('config', 'minfrarc.rb')
@@ -149,12 +144,12 @@ module Minfra
         env_path = config.project.dig(:minfra, :hiera, :env_path) || 'environments'
         root = base_path.join('hiera')
         root.join('hieradata',env_path).glob('*.eyaml').sort.each do |path|
-          env_name = path.basename.sub(/(\..+)/,'').to_s
-          @envs[env_name]=Env.new(
+          local_env_name = path.basename.sub(/(\..+)/,'').to_s
+          @envs[local_env_name]=Env.new(
             hiera_root: root, 
             hiera_env_path: env_path, 
-            name: env_name, 
-            hiera_debug_lookups: ENV['MINFRA_DEBUG_HIERA_LOOKUPS'] == 'true', 
+            name: local_env_name, 
+            hiera_debug_lookups: ENV['MINFRA_DEBUG_HIERA_LOOKUPS'] == 'true' && env_name == local_env_name, 
             backends: ENV.fetch('MINFRA_HIERA_BACKENDS','').split(',')
           )
         end
