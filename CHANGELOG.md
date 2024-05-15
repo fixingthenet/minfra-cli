@@ -1,3 +1,7 @@
+# 4.3.0
+ * raising EnvNotFound when the environment is not found
+ * instead of patching yaml we're introducing yeaml backend to lookup eyaml files without decryption
+ * fixing hiera setup so environment file is loaded first and merged into scope
 # 4.2.0
  * --no-rc don't load rc files
  * MINFRA_DEBUG_HIERA_LOOKUPS=true also shows the results of the lookup

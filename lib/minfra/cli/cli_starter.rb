@@ -153,6 +153,10 @@ module Minfra
             backends: ENV.fetch('MINFRA_HIERA_BACKENDS','').split(',')
           )
         end
+        unless @envs[@env_name]
+          @logger.error("Environment '#{@env_name}' not found")
+          raise Errors::EnvNotFound.new(@env_name) 
+        end
         @env = @envs[@env_name] # set the current env
       end
 

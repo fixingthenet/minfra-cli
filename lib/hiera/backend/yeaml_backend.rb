@@ -1,13 +1,15 @@
+require 'hiera/backend/yaml_backend'
+# require 'debug'
 class Hiera
   module Backend
-    class Yaml_backend
-
+    class Yeaml_backend < Hiera::Backend::Yaml_backend
       def lookup(key, scope, order_override, resolution_type, context)
         answer = nil
         found = false
 
-        Hiera.debug("Looking up #{key} in YAML backend")
-        Backend.datasourcefiles(:yaml, scope, Config[:yaml][:extension] || "yaml", order_override) do |source, yamlfile|
+        Hiera.debug("Looking up #{key} in YEAML backend")
+        Backend.datasourcefiles(:yeaml, scope, Config[:yeaml][:extension] || "eyaml", order_override) do |source, yamlfile|
+#          debugger if scope['env']== "dev-on-premises" && ['cluster', 'env','lookup_options'].include?(key)
           data = @cache.read_file(yamlfile, Hash) do |data|
             YAML.load(data) || {}
           end

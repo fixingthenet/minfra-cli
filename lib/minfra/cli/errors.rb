@@ -5,6 +5,8 @@ module Minfra
     module Errors
       class ExitError < StandardError
       end
+      class EnvNotFound < StandardError
+      end
     end
   end
 end

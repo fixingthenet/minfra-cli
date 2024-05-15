@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'English'
+# require 'debug'
 module Minfra
   module Cli
     class HieraLooker
@@ -12,11 +13,10 @@ module Minfra
 
         @hiera = Hiera.new(config: @root.join('hiera.yaml').to_s)
         # now that hiera has loaded the backends let's patch 'em
-        require 'minfra/cli/hiera_yaml_backend_patch' if defined?(Hiera::Backend::Yaml_backend)
         
         Hiera.logger = :noop
         if backends && !backends.empty?
-          @hiera.config[:backends] = backends 
+          @hiera.config[:backends] = backends
           Hiera::Config.load_backends
         end
 
@@ -25,11 +25,11 @@ module Minfra
         raise("unknown environment #{@env_name}, I expect a file at #{hiera_main_path}") unless hiera_main_path.exist?
 
         scope = { 'hieraroot' => @root.to_s, 'env' => @env_name }
+        # we have to do this first as the hierarchy definitions only are valid if with the env variables injected
+        node_scope = @hiera.lookup('env', {}, scope, nil, :priority)
+        @scope = scope.merge(node_scope)
 
         @special_lookups = @hiera.lookup('lookup_options', {}, scope, nil, :priority)
-
-        node_scope = @hiera.lookup('env', {}, scope, nil, :deeper)
-        @scope = scope.merge(node_scope)
         @debug_lookups = debug_lookups
         debug("hiera: scope -> #{@scope}") if @debug_lookups
       end
