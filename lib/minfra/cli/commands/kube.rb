@@ -112,22 +112,37 @@ module Minfra
 
         stack.release_path.mkpath
 
-        File.open(stack.compose_path, 'w') do |f|
-          Orchparty::App.new(cluster_name: cluster,
+        orch = Orchparty::App.new(cluster_name: cluster,
                              application_name: stack.name,
                              force_variable_definition: false,
                              file_name: stack.stack_rb_path.to_s,
                              status_dir: stack.release_path,
                              options:)
-                        .print(method:, out_io: f)
+
+        chart_release_name =nil
+        File.open(stack.compose_path, 'w') do |f|
+          chart_release_name = orch.print(method:, out_io: f).chart_release_name
         end
+        
         # run_cmd(generate_cmd, :bash)
         bash_cmd = ["cd #{stack.release_path}"]
         run_cmd(bash_cmd, :bash)
 
-        run_cmd(["cd #{stack.release_path}",
-                 "git --no-pager diff #{stack.release_path}"], :bash, silence: true)
-        # run_cmd("helm diff upgrade --allow-unreleased ccs-integration-service state/stacks/development-staging-1/ccs-integration-service/helm -n ccs-integration-service", :bash, silence: true)
+        # to live diff:
+        # old way:
+        # run_cmd(["cd #{stack.release_path}", "git --no-pager diff #{stack.release_path}"], :bash, silence: true)
+        # kube apply
+        # TBD ... kubectl --context kind-ccs --namespace ccs-webapp-service get deployment -o json ccs-webapp-web ????
+        # helm upgrade
+        info("Will run:")
+        run_cmd("cat #{stack.compose_path}", :bash)
+        info("Detected diffs on #{stack.compose_path} (uncertain):")
+        run_cmd(["cd #{stack.release_path}", "git --no-pager diff #{stack.compose_path}"], :bash)
+        
+        if chart_release_name && method == 'upgrade'
+          info("Will change helmchart:")
+          run_helm("diff upgrade --allow-unreleased #{chart_release_name} #{stack.result_path.join('helm')} -n  #{stack.name} --kube-context #{cluster}")
+        end  
 
         errors = stack.check_plan
         unless errors.empty?
@@ -142,12 +157,6 @@ module Minfra
 
         exit_error('Deployment aborted!') if !(@config.dev? || options[:force] == true) && !Ask.boolean('Are the changes ok?')
 
-        orch = Orchparty::App.new(cluster_name: cluster,
-                                  application_name: stack.name,
-                                  force_variable_definition: false,
-                                  file_name: stack.stack_rb_path.to_s,
-                                  status_dir: stack.release_path,
-                                  options:)
         orch.send(method)
       end
 

@@ -13,7 +13,7 @@ module Minfra
         when :exec
           Kernel.exec(cmd)
         when :bash
-          res = system(%(bash -c "#{Array.new(cmd).join(' && ')}"))
+          res = system(%(bash -c "#{Array(cmd).join(' && ')}"))
           exit_error('failed!') unless res
           nil # no output!
         when :system

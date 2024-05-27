@@ -28,6 +28,7 @@ module Orchparty
         self.options = options
       end
 
+
       def template(file_path, helm, flag: '-f ', fix_file_path: nil)
         return '' unless file_path
 
@@ -325,6 +326,13 @@ class KubernetesApplication
 
   def print(method)
     each_service("print_#{method}".to_sym)
+  end
+
+  # we use the chart's name as it's release name
+  # we currently support only one chart
+  
+  def chart_release_name
+    app_config[:services].values.select do |srv| srv[:_type] == 'chart' end[0][:name] rescue nil
   end
 
   private

@@ -7,7 +7,7 @@ module Minfra
       class KubeStackTemplate
         include ::Minfra::Cli::Logging
 
-        attr_reader :name, :env, :deployment, :config_path
+        attr_reader :name, :env, :deployment, :config_path, :result_path
 
         def initialize(name, config, cluster:, deployment: '')
           @name = name

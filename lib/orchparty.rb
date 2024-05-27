@@ -41,7 +41,9 @@ module Orchparty
     end
 
     def print(method:, out_io:)
-      app(out_io:).print(method)
+      res = app(out_io:)
+      res.print(method)
+      res
     end
 
     def install
