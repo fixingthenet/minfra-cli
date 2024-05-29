@@ -1,3 +1,5 @@
+# 4.3.1
+ * hashie mash hashes for helm values are now type converted correctl
 # 4.3.0
  * raising EnvNotFound when the environment is not found
  * instead of patching yaml we're introducing yeaml backend to lookup eyaml files without decryption

@@ -257,6 +257,8 @@ module Orchparty
                   { variable => value.to_s}.to_yaml[4..-1]
                 when yml.match(/!ruby\/array:Hashie::Array/)
                   { variable => value.to_a}.to_yaml[4..-1]
+                when yml.match(/!ruby\/hash:Hashie::Mash/)
+                  { variable => value.to_h}.to_yaml[4..-1]
                 else
                   yml  
               end
