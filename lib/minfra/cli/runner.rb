@@ -64,16 +64,18 @@ module Minfra
 
       attr_reader :exit_on_error, :runner, :cmd, :on_output
 
-      def initialize(cmd, exit_on_error: true, runner: :popen, on_output: nil)
+      def initialize(cmd, exit_on_error: true, runner: :popen, on_output: nil, test: false)
         @cmd = cmd
         @exit_on_error = exit_on_error
         @runner = runner
         @on_output = on_output
+        @test = test
       end
 
       def run
         debug("running (#{@runner}): #{@cmd}")
         res = Result.new(on_output:)
+        return res if @test
         case @runner
               when :system
                 run_system(res)

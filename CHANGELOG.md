@@ -1,3 +1,7 @@
+# 4.4.0
+ * adding test option to runner to not run any command
+ * adding option tag to project branch create to fully override tag generation logic
+ * adding test options to project branch create to not run the final git command
 # 4.3.1
  * hashie mash hashes for helm values are now type converted correctl
 # 4.3.0
