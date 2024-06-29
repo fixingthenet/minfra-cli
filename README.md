@@ -14,7 +14,7 @@ Is a KIND (k8s in docker) based development environment.
 |   | MINFRA_ARGV_FILE     |                       | --minfra_argv_file [PATH TO A CSV FILE FILE] |   |
 |   | MINFRA_LOGGING_LEVEL | minfra.logging_level  |                                              |   |
 |   |                      | minfra.hiera.env_path |                                              |   |
-|   |                      | default_stacks        |                                              | env.stacks or  env.roles   |
+|   |                      | default_stacks        |                                              | env.stacks |
 |   |                      |                       |                  | infra::allow_insecure_k8s_connections |
 | when set to 'true' all hiera lookups are logged on debug level  | MINFRA_DEBUG_HIERA_LOOKUPS | | | |
 | to override the backends in the hiera file, comma separated | MINFRA_HIERA_BACKENDS | | | |
@@ -22,19 +22,6 @@ Is a KIND (k8s in docker) based development environment.
 ## Expected hiera data
 
  * l("cluster.id"): the k8s name of the cluster
- 
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Orchparty
 

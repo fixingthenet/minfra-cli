@@ -1,3 +1,5 @@
+# 4.5.0
+ * removing the env.roles dependency so it's env.stacks only
 # 4.4.0
  * adding test option to runner to not run any command
  * adding option tag to project branch create to fully override tag generation logic

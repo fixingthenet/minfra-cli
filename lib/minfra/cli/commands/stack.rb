@@ -33,14 +33,14 @@ module Minfra
       option :opts
       option :force, type: :boolean
       def deploy(stack_name, message = '')
-        stacks = l('env.roles') || l('env.stacks') || []
+        stacks = l('env.stacks') || []
         default_stacks = minfra_config.project.default_stacks || []
-        stacks = stacks + default_stacks
+        stacks += default_stacks
         if stacks.include?(stack_name) || options[:force] || options[:test]
           kube.deploy(stack_name, message)
         else
-          exit_error("project:default_stacks or hiera:env.roles or hiera:env.stacks has to include '#{stack_name}' or use --force or --test")
-        end  
+          exit_error("project:default_stacks or hiera:env.stacks has to include '#{stack_name}' or use --force or --test")
+        end
       end
 
       desc 'rollback <extraargs>', 'rollback a deployment'
