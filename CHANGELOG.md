@@ -1,3 +1,5 @@
+# 4.6.0
+ * loosening dependency versions
 # 4.5.0
  * removing the env.roles dependency so it's env.stacks only
 # 4.4.0

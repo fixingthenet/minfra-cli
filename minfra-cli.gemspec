@@ -28,14 +28,13 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
   
   spec.add_runtime_dependency 'thor', '~> 1.0', '>= 1.0.0'
-  spec.add_runtime_dependency "table_print", "1.5.6"
+  spec.add_runtime_dependency "table_print", "~> 1.5"
   spec.add_runtime_dependency "rest-client", "~>2.0"
   spec.add_runtime_dependency "hashie", "~>3.5"
-  spec.add_runtime_dependency "activesupport", "= 7.0.7.2"
+  spec.add_runtime_dependency "activesupport", ">= 7"
   spec.add_runtime_dependency "erubis", "~> 2.7"
-  spec.add_runtime_dependency "hiera", "3.9.0"
-  spec.add_runtime_dependency "hiera-eyaml", "3.3.0"
-  spec.add_runtime_dependency "hiera-eyaml-gpg", "0.7.4"
-  spec.add_runtime_dependency "gpgme", "~>2.0.0"
+  spec.add_runtime_dependency "hiera", "~> 3.9"
+  spec.add_runtime_dependency "hiera-eyaml", "~> 3.3"
+  spec.add_runtime_dependency "hiera-eyaml-gpg", "~> 0.7"
+  spec.add_runtime_dependency "gpgme", "~>2.0"
 end
-
