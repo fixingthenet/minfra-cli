@@ -2,6 +2,6 @@
 
 module Minfra
   module Cli
-    VERSION = '4.6.0'
+    VERSION = '5.0.0'
   end
 end

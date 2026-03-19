@@ -8,10 +8,6 @@ module Minfra
         @plugins = plugins
       end
 
-      def prepare
-        @plugins.each(&:prepare)
-      end
-
       def setup
         @plugins.each(&:setup)
       end
@@ -20,17 +16,10 @@ module Minfra
         @plugins.each(&)
       end
 
-      def self.load(base_path)
+      def self.load
         found = []
-        [base_path.join('config', 'minfra_plugins.json'),
-         base_path.join('me', 'minfra_plugins.json')].each do |file|
-          next unless File.exist?(file)
-
-          plugins = JSON.parse(File.read(file))
-          plugins['plugins'].each do |spec|
-            found << Plugin.new(name: spec['name'], opts: spec['opts'] || {}, version: spec['version'],
-                                disabled: spec['disabled'])
-          end
+        definition = Bundler.definition.specs.each do |spec|
+           found << Plugin.new(spec) if Pathname.new(spec.full_gem_path).join('minfracs').exist?
         end
         new(found)
       end

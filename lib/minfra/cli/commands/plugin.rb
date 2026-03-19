@@ -11,10 +11,7 @@ module Minfra
       end
       desc 'install', 'install plugins'
       def install
-        Minfra::Cli.cli.plugins.each do |plugin|
-          puts "setup: #{plugin.name}"
-          plugin.install
-        end
+        puts "deprecated, use bundle install"
       end
     end
   end

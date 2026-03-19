@@ -36,3 +36,24 @@ an application can have
  * variables
  * configurations
  * secrets
+
+# Upgrades
+
+## 4. to 5.
+
+Create a Gemfile and Gemfile.lock in your $MINFRA_PATH with minfra-cli AND
+your plugins.
+
+Create a "minfra" executable in your $PATH with the content
+```
+#!/usr/bin/env ruby
+path = File.expand_path('Gemfile', ENV['MINFRA_PATH'])
+ENV["BUNDLE_GEMFILE"] ||= path
+require "bundler/setup"
+require 'minfra/cli'
+
+exit Minfra::Cli.exec(ARGV)
+```
+
+remove the files config/minfra_plugins.json
+
