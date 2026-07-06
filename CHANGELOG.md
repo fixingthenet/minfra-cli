@@ -1,3 +1,7 @@
+# 5.0.0
+ * plugins install removed
+ * minfra uses a usual gemfile
+ * minfra binary has to be in your path in your project see README
 # 4.6.0
  * loosening dependency versions
 # 4.5.0
