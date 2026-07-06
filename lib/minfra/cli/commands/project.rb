@@ -39,7 +39,7 @@ module Minfra
       subcommand 'branch', Branch
 
       desc 'tag', 'manage tags'
-      subcommand 'tag', Tag
+      subcommand 'tag', TagCli
 
       desc 'test', 'run tests'
       def test
@@ -60,11 +60,8 @@ module Minfra
       option 'target', aliases: ['-t']
       def build
         p = ProjectInfo.load(Pathname.pwd)
-        run_pre_repo
-        target = options[:target] || p.docker.dev_target
-
-        cmd = %(docker build #{"--target #{target}" if target} -t #{p.repo_name}:latest #{p.app_dir})
-        res = Runner.run(cmd)
+        target = options[:target]
+        res=docker_build(target)
         exit(1) if res.error?
 
         return if options[:noload]
@@ -83,17 +80,18 @@ module Minfra
       desc 'push', 'push directly to the repo'
       option 'tag', aliases: ['-t']
       option 'registry', aliases: ['-r']
+      option 'build', type: :boolean, default: true
       def push
         tag = options[:tag] || `date +%Y%m%d%H%M`
         p = ProjectInfo.load(Pathname.pwd)
-
+        
         repo_name = if options[:registry]
                       "#{options[:registry]}/#{p.repo_name}"
                     else
                       p.repo_name
                     end
 
-        Runner.run(%(docker build -t #{p.repo_name}:latest #{p.app_dir}))
+        docker_build(nil) if options[:build]
         #        Runner.run(%{docker push #{p.repo_name}})
         Runner.run(%(docker tag #{p.repo_name}:latest #{repo_name}:#{tag}))
         Runner.run(%(docker push #{repo_name}:#{tag}))
@@ -101,6 +99,24 @@ module Minfra
 
       private
 
+      def docker_build(target)
+        p = ProjectInfo.load(Pathname.pwd)
+        run_pre_repo
+        args=[]
+        if p.build&.args
+          p.build&.args.each_pair do |arg, val|
+            args << "--build-arg #{arg}=#{l!(val)}"
+          end
+        end
+        if target
+          target = "--target #{target}"
+        else
+          traget = ''  
+        end
+        
+        Runner.run(%(docker build #{args.join(' ')} #{target} -t #{p.repo_name}:latest #{p.app_dir} ))
+      end
+      
       def run_pre_repo
         Runner.run(minfra_config.base_path.join('hooks', 'pre_repo.sh').to_s)
       end

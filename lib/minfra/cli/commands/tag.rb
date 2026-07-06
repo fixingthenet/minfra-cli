@@ -17,6 +17,7 @@ module Minfra
         info 'Creating tag.'
         run_cmd(cmd_tag_commit(message), :system)
         run_cmd(cmd_push_tag, :system)
+        tag_name
       end
 
       def ensure_commit_is_pushed
@@ -59,7 +60,7 @@ module Minfra
 
       # TBD: this should be more flexible
       def tag_name
-        "#{git_current_branch}-REL-#{@now.strftime(@format)}"
+        @tag_name ||= "#{git_current_branch}-REL-#{@now.strftime(@format)}"
       end
 
       def run_cmd(cmd, _how = :system)
